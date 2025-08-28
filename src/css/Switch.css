@@ -1,0 +1,50 @@
+.switch-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: #fff;
+  font-size: 0.9rem;
+  width: 10rem;
+}
+
+.switch-label {
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.switch {
+  width: 2.5rem;
+  height: 1rem;
+  background: rgba(255,255,255,0.3);
+  border-radius: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.switch.on {
+  background: #908de4;
+}
+
+.switch-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: -0.25rem;
+  left: 0rem;
+  transition: left 0.3s;
+}
+
+.switch.on .switch-thumb {
+  left: calc(100% - 1.5rem);
+  background: #554fe9;
+}
+
+.switch-value {
+  flex-shrink: 0;
+  width: 2ch;
+  text-transform: capitalize;
+}
