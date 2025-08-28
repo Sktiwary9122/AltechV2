@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
-import { getRmReport, listPartsRequiredHeaderSubheader } from "../api/api";
+import { getRmReport, listPartsRequiredHeaderSubheader, exportRmReport } from "../api/api";
 
 /* ---------------- IST date helpers ---------------- */
 function nowIST() {
@@ -23,52 +23,11 @@ function toISTDateKey(dLike) {
 function currentMonthRangeIST() {
   const today = nowIST();
   const start = new Date(today.getFullYear(), today.getMonth(), 1);
-  // end = today (not month end) as per your “start and end of current month”
   return {
     dateFrom: toISTDateKey(start),
     dateTo: toISTDateKey(today),
   };
 }
-
-/* --------------- sample (for instant preview) --------------- */
-const SAMPLE_RECORD = [
-  {
-    "Date": "2025-08-28",
-    "Product": "STABLIZER",
-    "Model No": "ARIZOR 4150",
-    "Product Sr No.": "25_altech_00001",
-    "Fault Reported": "YES",
-    "Fault Analysed(Functional)": "NOT WORKING",
-    "Cosmetic Problem": "BODY DAMAGE",
-    partsRequired: [
-      {
-        header: "PACKING MATERIALS",
-        type: "tree",
-        subHeader: "BABY CARTON",
-        industryName: "baby crtnbn290x275x187 vg 100 supreme cherry",
-        qty: 20,
-      },
-    ],
-    partsReplaced: [
-      {
-        header: "PACKING MATERIALS",
-        type: "tree",
-        subHeader: "BABY CARTON",
-        industryName: "baby crtnbn290x275x187 vg 100 supreme cherry",
-        qty: 20,
-        rate: 7.5,
-      },
-    ],
-    totalCost: 150,
-    "Action Taken": "",
-    "Packing Status": "Completed",
-    "Packing Date": "2025-08-28",
-    "New Sr No.": "7539514862",
-    Remarks: "",
-    assignedTo: ["aneesh", "JAIDEV", "dilip"],
-    submittedBy: "ayush",
-  },
-];
 
 /* ---------------- styles ---------------- */
 const inputCls =
@@ -79,221 +38,215 @@ const cardCls =
   "w-full p-4 bg-white/10 backdrop-blur-md rounded-xl shadow-lg shadow-black/40 border border-white/10";
 
 /* ============================================================
-   Dashboard
+   Dashboard (RM Report)
    ============================================================ */
 export default function Dashboard() {
-  /* ---------- filters (default to current month IST) ---------- */
+  // filters (default: this month IST)
   const { dateFrom: monthStart, dateTo: monthEnd } = useMemo(
     () => currentMonthRangeIST(),
     []
   );
   const [dateFrom, setDateFrom] = useState(monthStart);
   const [dateTo, setDateTo] = useState(monthEnd);
-
   const [q, setQ] = useState("");
   const [productName, setProductName] = useState("");
   const [modelNumber, setModelNumber] = useState("");
   const [productSrNo, setProductSrNo] = useState("");
   const [packingStatus, setPackingStatus] = useState("");
 
-  /* ---------- data ---------- */
+  // data
   const [loading, setLoading] = useState(false);
-  const [catalog, setCatalog] = useState([]); // listPartsRequiredHeaderSubheader().data.items
-  const [columns, setColumns] = useState([]); // final columns to render
-  const [rows, setRows] = useState([]);       // mapped rows
-  const [groups, setGroups] = useState(null); // {bands, subBands}
-  const [usingDemo, setUsingDemo] = useState(false);
+  const [catalog, setCatalog] = useState([]); // /parts-required/unique -> data.items
+  const [columns, setColumns] = useState([]); // final columns
+  const [rows, setRows] = useState([]);       // final rows
+  const [groups, setGroups] = useState(null); // bands + subBands
 
-  /* ---------- build columns (core + PR + RP) from catalog ---------- */
+  /* ---------- helpers: read catalog structure ---------- */
+  // catalog item example (from your controller):
+  // { "PACKING MATERIALS": { type:"tree", subHeaders:[ {"BABY CARTON":{...}}, {"BUBBLE":{...}} ] } }
+  function extractSubHeaders(payload) {
+    const arr = [];
+    const raw = payload?.subHeaders || payload?.subheaders || [];
+    for (const s of raw) {
+      if (!s) continue;
+      if (typeof s === "string") arr.push(s);
+      else {
+        const k = Object.keys(s || {})[0];
+        if (k) arr.push(k);
+      }
+    }
+    return arr;
+  }
+
+  /* ---------- columns builder (exact Excel order) ---------- */
   const buildColumnsFromCatalog = (items) => {
-    // Core "Details" columns
-    const coreCols = [
-      { key: "date", label: "Date" },
-      { key: "product", label: "Product" },
-      { key: "modelNumber", label: "Model No" },
-      { key: "productSrNo", label: "Product Sr No." },
-      { key: "faultReported", label: "Fault Reported" },
-      { key: "faultAnalyzed", label: "Fault Analysed(Functional)" },
-      { key: "cosmeticProblem", label: "Cosmetic Problem" },
-      { key: "actionTaken", label: "Action Taken" },
-      { key: "packingStatus", label: "Packing Status" },
-      { key: "packingDate", label: "Packing Date" },
-      { key: "newSrNo", label: "New Sr No." },
-      { key: "remarks", label: "Remarks" },
-      { key: "assignedTo", label: "Assigned To" },
-      { key: "submittedBy", label: "Submitted By" },
-      { key: "totalCost", label: "Total Cost" },
+    // static left (exact order)
+    const left = [
+      { key: "Date", label: "Date" },
+      { key: "Product", label: "Product" },
+      { key: "Model No", label: "Model No" },
+      { key: "Product Sr No.", label: "Product Sr No." },
+      { key: "Fault Reported", label: "Fault Reported" },
+      { key: "Fault Analysed(Functional)", label: "Fault Analysed(Functional)" },
+      { key: "Cosmetic Problem", label: "Cosmetic Problem" },
     ];
 
-    const prCols = [];
-    const rpCols = [];
-    const prSubBands = []; // [{title, count}]
-    const rpSubBands = []; // [{title, count}]
+    // PR & RP dynamic blocks
+    const PR_GROUPS = [];
+    const RP_GROUPS = [];
+    const prSubBands = [];
+    const rpSubBands = [];
 
-    const list = Array.isArray(items) ? items : [];
-
-    list.forEach((obj) => {
+    const safeItems = Array.isArray(items) ? items : [];
+    // keep headers sorted as backend already returns sorted, but sort defensively
+    safeItems.forEach((obj) => {
       const header = Object.keys(obj || {})[0];
       if (!header) return;
       const meta = obj[header] || {};
       const type = String(meta.type || "").toLowerCase();
 
       if (type === "flat") {
-        // PR: one qty column
-        prCols.push({
-          key: `PR|FLAT|${header}`,
-          label: `PR • ${header} • Qty`,
-        });
-        prSubBands.push({ title: header, count: 1 });
+        // PR: Names + Qty
+        PR_GROUPS.push([
+          { key: `PR|FLAT|${header}|NAMES`, label: header }, // names cell
+          { key: `PR|FLAT|${header}|QTY`, label: "Qty" },
+        ]);
+        prSubBands.push({ title: header, count: 2 });
 
-        // RP: qty + cost
-        rpCols.push(
-          { key: `RP|FLAT|${header}|QTY`, label: `RP • ${header} • Qty` },
-          { key: `RP|FLAT|${header}|COST`, label: `RP • ${header} • Cost` }
-        );
-        rpSubBands.push({ title: header, count: 2 });
+        // RP: Names + Qty + Cost
+        RP_GROUPS.push([
+          { key: `RP|FLAT|${header}|NAMES`, label: header },
+          { key: `RP|FLAT|${header}|QTY`, label: "Qty" },
+          { key: `RP|FLAT|${header}|COST`, label: "Cost" },
+        ]);
+        rpSubBands.push({ title: header, count: 3 });
       } else if (type === "tree") {
-        const subs = Array.isArray(meta.subHeaders) ? meta.subHeaders : [];
-        // PR: one column per subHeader
-        prSubBands.push({ title: header, count: subs.length || 1 });
-        // RP: two per subHeader
-        rpSubBands.push({ title: header, count: (subs.length || 1) * 2 });
+        const subs = extractSubHeaders(meta);
+        const subCount = Math.max(1, subs.length);
+
+        prSubBands.push({ title: header, count: subCount * 2 });
+        rpSubBands.push({ title: header, count: subCount * 3 });
 
         if (!subs.length) {
-          // fallback: just a single unknown subHeader
-          prCols.push({
-            key: `PR|TREE|${header}|(unknown)`,
-            label: `PR • ${header} • (unknown) — Qty`,
-          });
-          rpCols.push(
-            {
-              key: `RP|TREE|${header}|(unknown)|QTY`,
-              label: `RP • ${header} • (unknown) — Qty`,
-            },
-            {
-              key: `RP|TREE|${header}|(unknown)|COST`,
-              label: `RP • ${header} • (unknown) — Cost`,
-            }
-          );
+          PR_GROUPS.push([
+            { key: `PR|TREE|${header}|(unknown)|NAMES`, label: "(unknown)" },
+            { key: `PR|TREE|${header}|(unknown)|QTY`, label: "Qty" },
+          ]);
+          RP_GROUPS.push([
+            { key: `RP|TREE|${header}|(unknown)|NAMES`, label: "(unknown)" },
+            { key: `RP|TREE|${header}|(unknown)|QTY`, label: "Qty" },
+            { key: `RP|TREE|${header}|(unknown)|COST`, label: "Cost" },
+          ]);
         } else {
-          subs.forEach((subObj) => {
-            const subHeader = Object.keys(subObj || {})[0];
-            if (!subHeader) return;
-            prCols.push({
-              key: `PR|TREE|${header}|${subHeader}`,
-              label: `PR • ${header} • ${subHeader} — Qty`,
-            });
-            rpCols.push(
-              {
-                key: `RP|TREE|${header}|${subHeader}|QTY`,
-                label: `RP • ${header} • ${subHeader} — Qty`,
-              },
-              {
-                key: `RP|TREE|${header}|${subHeader}|COST`,
-                label: `RP • ${header} • ${subHeader} — Cost`,
-              }
-            );
+          subs.forEach((sub) => {
+            PR_GROUPS.push([
+              { key: `PR|TREE|${header}|${sub}|NAMES`, label: sub },
+              { key: `PR|TREE|${header}|${sub}|QTY`, label: "Qty" },
+            ]);
+            RP_GROUPS.push([
+              { key: `RP|TREE|${header}|${sub}|NAMES`, label: sub },
+              { key: `RP|TREE|${header}|${sub}|QTY`, label: "Qty" },
+              { key: `RP|TREE|${header}|${sub}|COST`, label: "Cost" },
+            ]);
           });
         }
       }
     });
 
-    // Bands
-    const detailsSpan = coreCols.length;
-    const prStart = detailsSpan;
-    const prEnd = prStart + prCols.length - 1;
-    const rpStart = prEnd + 1;
-    const rpEnd = rpStart + rpCols.length - 1;
+    // static right (exact order)
+    const right = [
+      { key: "Action Taken", label: "Action Taken" },
+      { key: "Packing Status", label: "Packing Status" },
+      { key: "Packing Date", label: "Packing Date" },
+      { key: "New Sr No.", label: "New Sr No." },
+      { key: "Remarks", label: "Remarks" },
+    ];
+
+    // bands (row A)
+    const prStart = left.length;
+    const prColsCount = PR_GROUPS.reduce((s, g) => s + g.length, 0);
+    const rpStart = prStart + prColsCount;
+    const rpColsCount = RP_GROUPS.reduce((s, g) => s + g.length, 0);
 
     const bands = [];
-    if (prCols.length) bands.push({ title: "Parts Required", startIndex: prStart, endIndex: prEnd });
-    if (rpCols.length) bands.push({ title: "Parts Replaced", startIndex: rpStart, endIndex: rpEnd });
+    if (prColsCount) bands.push({ title: "Parts Required", startIndex: prStart, endIndex: prStart + prColsCount - 1 });
+    if (rpColsCount) bands.push({ title: "Parts Replaced", startIndex: rpStart, endIndex: rpStart + rpColsCount - 1 });
 
-    const cols = [...coreCols, ...prCols, ...rpCols];
+    const columns = [
+      ...left,
+      ...PR_GROUPS.flat(),
+      ...RP_GROUPS.flat(),
+      ...right,
+    ];
     const subBands = { partsRequired: prSubBands, partsReplaced: rpSubBands };
 
-    return { columns: cols, groups: { bands, subBands } };
+    return { columns, groups: { bands, subBands } };
   };
 
-  /* ---------- map API record[] to row objects that match columns ---------- */
-  const mapRecordsToRows = (recordList, cols) => {
+  /* ---------- mapper from API records to row values ---------- */
+  const mapRecordsToRows = (records, cols) => {
     const rowsOut = [];
     const colKeys = cols.map((c) => c.key);
 
-    (Array.isArray(recordList) ? recordList : []).forEach((rec) => {
-      // Core
+    for (const rec of records || []) {
+      // base static fields (exact keys as we agreed)
       const base = {
-        date: rec["Date"] ?? "—",
-        product: rec["Product"] ?? "—",
-        modelNumber: rec["Model No"] ?? "—",
-        productSrNo: rec["Product Sr No."] ?? "—",
-        faultReported: rec["Fault Reported"] ?? "—",
-        faultAnalyzed: rec["Fault Analysed(Functional)"] ?? "—",
-        cosmeticProblem: rec["Cosmetic Problem"] ?? "—",
-        actionTaken: rec["Action Taken"] ?? "—",
-        packingStatus: rec["Packing Status"] ?? "—",
-        packingDate: rec["Packing Date"] ?? "—",
-        newSrNo: rec["New Sr No."] ?? "—",
-        remarks: rec["Remarks"] ?? "—",
-        assignedTo: Array.isArray(rec.assignedTo) ? rec.assignedTo.join(", ") : (rec.assignedTo || "—"),
-        submittedBy: rec.submittedBy ?? "—",
-        totalCost: rec.totalCost ?? 0,
+        "Date": rec["Date"] ?? "—",
+        "Product": rec["Product"] ?? "—",
+        "Model No": rec["Model No"] ?? "—",
+        "Product Sr No.": rec["Product Sr No."] ?? "—",
+        "Fault Reported": rec["Fault Reported"] ?? "—",
+        "Fault Analysed(Functional)": rec["Fault Analysed(Functional)"] ?? "—",
+        "Cosmetic Problem": rec["Cosmetic Problem"] ?? "—",
+        "Action Taken": rec["Action Taken"] ?? "—",
+        "Packing Status": rec["Packing Status"] ?? "—",
+        "Packing Date": rec["Packing Date"] ?? "—",
+        "New Sr No.": rec["New Sr No."] ?? "—",
+        "Remarks": rec["Remarks"] ?? "—",
       };
 
-      // PR values
-      const prVals = {};
-      const prArr = Array.isArray(rec.partsRequired) ? rec.partsRequired : [];
-      prArr.forEach((item) => {
-        const header = item.header || "";
-        const type = (item.type || "").toLowerCase();
-        const sub = item.subHeader || "";
-        const qty = Number(item.qty || 0);
+      const merged = { ...base };
 
-        let key;
-        if (type === "tree") {
-          key = `PR|TREE|${header}|${sub}`;
-        } else {
-          key = `PR|FLAT|${header}`;
+      // PR values come as { flat:[{header, industryNames, qty}], tree:[{header, subHeader, industryNames, qty}] }
+      const pr = rec?.partsRequired || {};
+      for (const r of pr.flat || []) {
+        merged[`PR|FLAT|${r.header}|NAMES`] = r.industryNames || "";
+        merged[`PR|FLAT|${r.header}|QTY`] = Number(r.qty || 0);
+      }
+      for (const r of pr.tree || []) {
+        merged[`PR|TREE|${r.header}|${r.subHeader}|NAMES`] = r.industryNames || "";
+        merged[`PR|TREE|${r.header}|${r.subHeader}|QTY`] = Number(r.qty || 0);
+      }
+
+      // RP values { flat:[{header, industryNames, qty, cost}], tree:[{header, subHeader, industryNames, qty, cost}] }
+      const rp = rec?.partsReplaced || {};
+      for (const r of rp.flat || []) {
+        merged[`RP|FLAT|${r.header}|NAMES`] = r.industryNames || "";
+        merged[`RP|FLAT|${r.header}|QTY`] = Number(r.qty || 0);
+        merged[`RP|FLAT|${r.header}|COST`] = Number(r.cost || 0);
+      }
+      for (const r of rp.tree || []) {
+        merged[`RP|TREE|${r.header}|${r.subHeader}|NAMES`] = r.industryNames || "";
+        merged[`RP|TREE|${r.header}|${r.subHeader}|QTY`] = Number(r.qty || 0);
+        merged[`RP|TREE|${r.header}|${r.subHeader}|COST`] = Number(r.cost || 0);
+      }
+
+      // ensure all keys exist
+      for (const k of colKeys) {
+        if (typeof merged[k] === "undefined") {
+          merged[k] =
+            k.endsWith("|QTY") || k.endsWith("|COST")
+              ? 0
+              : ""; // names cells default blank
         }
-        prVals[key] = (prVals[key] || 0) + qty;
-      });
-
-      // RP values (Qty + Cost)
-      const rpVals = {};
-      const rpArr = Array.isArray(rec.partsReplaced) ? rec.partsReplaced : [];
-      rpArr.forEach((item) => {
-        const header = item.header || "";
-        const type = (item.type || "").toLowerCase();
-        const sub = item.subHeader || "";
-        const qty = Number(item.qty || 0);
-        const rate = Number(item.rate || 0);
-        let qtyKey, costKey;
-
-        if (type === "tree") {
-          qtyKey = `RP|TREE|${header}|${sub}|QTY`;
-          costKey = `RP|TREE|${header}|${sub}|COST`;
-        } else {
-          qtyKey = `RP|FLAT|${header}|QTY`;
-          costKey = `RP|FLAT|${header}|COST`;
-        }
-
-        rpVals[qtyKey] = (rpVals[qtyKey] || 0) + qty;
-        rpVals[costKey] = (rpVals[costKey] || 0) + qty * rate;
-      });
-
-      // merge + ensure all col keys exist
-      const merged = { ...base, ...prVals, ...rpVals };
-      colKeys.forEach((k) => {
-        if (typeof merged[k] === "undefined") merged[k] = k.includes("COST") || k === "totalCost" ? 0 : 0;
-      });
+      }
 
       rowsOut.push(merged);
-    });
-
+    }
     return rowsOut;
   };
 
-  /* ---------- querying ---------- */
+  /* ---------- fetch & wire ---------- */
   const fetchEverything = async (opts = {}) => {
     const from = opts.dateFrom ?? dateFrom;
     const to = opts.dateTo ?? dateTo;
@@ -308,19 +261,18 @@ export default function Dashboard() {
     }
 
     setLoading(true);
-    setUsingDemo(false);
     try {
-      // 1) fetch catalog (headers / subheaders)
+      // 1) Catalog (headers & subheaders universe)
       const catRes = await listPartsRequiredHeaderSubheader();
       const catItems = catRes?.data?.data?.items || catRes?.data?.items || [];
       setCatalog(catItems);
-
       const { columns: cols, groups: grp } = buildColumnsFromCatalog(catItems);
       setColumns(cols);
       setGroups(grp);
 
-      // 2) fetch report
+      // 2) Report data
       const params = {
+        scope: "range",
         dateFrom: from,
         dateTo: to,
         q: q || undefined,
@@ -330,35 +282,26 @@ export default function Dashboard() {
         packingStatus: packingStatus || undefined,
       };
       const repRes = await getRmReport(params);
-      const record = repRes?.data?.data?.record || repRes?.data?.record || [];
+      const records =
+        repRes?.data?.data?.records ||
+        repRes?.data?.records ||
+        repRes?.data?.data?.record || // fallback if older name
+        repRes?.data?.record ||
+        [];
 
-      // If API returns empty, show sample
-      const finalRows = record && record.length ? mapRecordsToRows(record, cols) : mapRecordsToRows(SAMPLE_RECORD, cols);
-      setRows(finalRows);
-      if (!record || !record.length) {
-        setUsingDemo(true);
-        toast.info("API returned no rows — showing sample data.");
-      }
+      setRows(mapRecordsToRows(records, cols));
     } catch (e) {
       console.error(e);
-      setUsingDemo(true);
-      toast.error(e?.response?.data?.message || "Failed to load report. Showing sample.");
-      // Try to build columns from a minimal synthetic catalog for sample
-      const syntheticCatalog = [
-        { "PACKING MATERIALS": { type: "tree", subHeaders: [{ "BABY CARTON": {} }] } },
-      ];
-      setCatalog(syntheticCatalog);
-      const { columns: cols, groups: grp } = buildColumnsFromCatalog(syntheticCatalog);
-      setColumns(cols);
-      setGroups(grp);
-      setRows(mapRecordsToRows(SAMPLE_RECORD, cols));
+      toast.error(e?.response?.data?.message || "Failed to load report");
+      setColumns([]);
+      setRows([]);
+      setGroups(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // initial load with current month range
     fetchEverything({ dateFrom, dateTo });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -393,6 +336,46 @@ export default function Dashboard() {
     });
     return { detailsSpan, bandSpans };
   }, [columns, groups]);
+
+  /* ---------- download Excel ---------- */
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        scope: "range",
+        dateFrom,
+        dateTo,
+        q: q || undefined,
+        productName: productName || undefined,
+        modelNumber: modelNumber || undefined,
+        productSrNo: productSrNo || undefined,
+        packingStatus: packingStatus || undefined,
+      };
+      const res = await exportRmReport(params);
+      const blob = new Blob([res.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      // Try to read filename from header; fallback
+      const cd = res.headers?.["content-disposition"] || "";
+      const match = /filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i.exec(cd);
+      const filename = decodeURIComponent(match?.[1] || match?.[2] || `rm-report-${dateFrom}_to_${dateTo}.xlsx`);
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      toast.error(e?.response?.data?.message || "Failed to download Excel");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 pt-24 text-white">
@@ -440,7 +423,7 @@ export default function Dashboard() {
                 className={inputCls}
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g. STABLIZER"
+                placeholder="e.g. STABILIZER"
               />
             </div>
             <div className="md:col-span-2">
@@ -475,7 +458,7 @@ export default function Dashboard() {
               </select>
             </div>
 
-            <div className="md:col-span-3 flex items-end gap-2">
+            <div className="md:col-span-4 flex items-end gap-2">
               <button
                 type="button"
                 onClick={() => fetchEverything()}
@@ -492,29 +475,14 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  // build columns from minimal synthetic catalog + load sample row
-                  const syntheticCatalog = [
-                    { "PACKING MATERIALS": { type: "tree", subHeaders: [{ "BABY CARTON": {} }] } },
-                  ];
-                  const { columns: cols, groups: grp } = buildColumnsFromCatalog(syntheticCatalog);
-                  setColumns(cols);
-                  setGroups(grp);
-                  setRows(mapRecordsToRows(SAMPLE_RECORD, cols));
-                  setUsingDemo(true);
-                  toast.success("Loaded sample data");
-                }}
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700"
+                onClick={handleDownload}
+                className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+                title="Download Excel"
               >
-                Load sample data
+                Download Excel
               </button>
             </div>
           </div>
-          {usingDemo && (
-            <div className="mt-3 text-amber-300 text-sm">
-              Showing sample data. Click <b>Apply</b> to hit the API.
-            </div>
-          )}
         </div>
       </div>
 
@@ -523,11 +491,11 @@ export default function Dashboard() {
         <table className="w-full min-w-[1200px] table-auto border-collapse">
           {columns.length > 0 && (
             <thead>
-              {/* Row A: Bands */}
+              {/* Row A: Bands (Details / Parts Required / Parts Replaced) */}
               <tr>
                 {headerMeta.detailsSpan > 0 && (
                   <th
-                    className="sticky top-0 bg-gradient-to-b from-slate-200 to-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                    className="sticky top-0 bg-[#FFC000] text-black px-4 py-2 border border-[#162134] text-center"
                     colSpan={headerMeta.detailsSpan}
                   >
                     Details
@@ -536,7 +504,7 @@ export default function Dashboard() {
                 {headerMeta.bandSpans.map((b, i) => (
                   <th
                     key={`band-${i}`}
-                    className="sticky top-0 bg-gradient-to-b from-slate-200 to-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                    className="sticky top-0 bg-[#FFC000] text-black px-4 py-2 border border-[#162134] text-center"
                     colSpan={b.span}
                   >
                     {b.title}
@@ -544,13 +512,13 @@ export default function Dashboard() {
                 ))}
               </tr>
 
-              {/* Row B: Sub-bands */}
+              {/* Row B: Sub-bands (each header title centered, spans its leaf cols) */}
               {groups?.subBands ? (
                 <tr>
                   {/* spacer for Details */}
                   {headerMeta.detailsSpan > 0 && (
                     <th
-                      className="sticky top-[37px] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left"
+                      className="sticky top-[40px] bg-slate-200 text-black px-4 py-2 border border-[#162134]"
                       colSpan={headerMeta.detailsSpan}
                     />
                   )}
@@ -558,7 +526,7 @@ export default function Dashboard() {
                   {(groups?.subBands?.partsRequired || []).map((s, i) => (
                     <th
                       key={`pr-${i}`}
-                      className="sticky top-[37px] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left"
+                      className="sticky top-[40px] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-center"
                       colSpan={Number(s.count) || 1}
                     >
                       {s.title}
@@ -568,7 +536,7 @@ export default function Dashboard() {
                   {(groups?.subBands?.partsReplaced || []).map((s, i) => (
                     <th
                       key={`rp-${i}`}
-                      className="sticky top-[37px] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left"
+                      className="sticky top-[40px] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-center"
                       colSpan={Number(s.count) || 1}
                     >
                       {s.title}
@@ -577,12 +545,12 @@ export default function Dashboard() {
                 </tr>
               ) : null}
 
-              {/* Row C: Actual column labels */}
+              {/* Row C: Leaf column labels */}
               <tr>
                 {columns.map((c) => (
                   <th
                     key={c.key}
-                    className="sticky top-[74px] bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                    className="sticky top-[80px] bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
                     title={c.key}
                   >
                     {c.label || c.key}
@@ -611,7 +579,7 @@ export default function Dashboard() {
                   {columns.map((c) => {
                     const val = r[c.key];
                     const display =
-                      typeof val === "number" ? val : (val ?? "—");
+                      typeof val === "number" ? val : (val ?? "");
                     return (
                       <td
                         key={c.key}

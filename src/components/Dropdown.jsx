@@ -43,7 +43,7 @@ export default function Dropdown({
       setFiltered(options);
       return;
     }
-    const q = search.trim().toLowerCase();
+    const q = search.toLowerCase();
     setFiltered(q ? options.filter((o) => o.toLowerCase().includes(q)) : options);
   }, [search, options, disableSearch]);
 
@@ -160,7 +160,7 @@ export default function Dropdown({
 
       {/* Trigger */}
       <div className="relative">
-        <button
+        <div
           type="button"
           ref={triggerRef}
           disabled={disabled}
@@ -210,7 +210,7 @@ export default function Dropdown({
           <FiChevronDown
             className={`w-6 h-6 transform transition-transform ${open ? "rotate-180" : ""}`}
           />
-        </button>
+        </div>
       </div>
 
       {/* Portal menu — NO position animation; only optional fade */}
