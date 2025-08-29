@@ -7,7 +7,7 @@ import axios from "axios";
 /* ============================================
    AXIOS: base URL + Bearer token from storage
    ============================================ */
-const BASE_URL = "https://419c8033a967.ngrok-free.app/api"; // change if needed
+const BASE_URL = "http://localhost:8000/api"; // change if needed
 
 const api = axios.create({ baseURL: BASE_URL });
 
@@ -398,7 +398,6 @@ export function exportDailyConsumption(params) {
 export const exportRmReport = (params) =>
   api.get("/rm/export", { params, responseType: "blob" });
 
-export const getRmReport = (params) =>
-  api.get("/rm/report", { params });
+export const getRmReport = (params) => api.get("/rm/report", { params });
 
 export default api;

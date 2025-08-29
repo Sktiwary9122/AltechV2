@@ -1,4 +1,3 @@
-// src/pages/DailyConsumption.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -22,13 +21,14 @@ function toISTDateKey(d) {
     const utc = date.getTime() + date.getTimezoneOffset() * 60000;
     const ist = new Date(utc + 5.5 * 60 * 60000);
     const pad = (n) => String(n).padStart(2, "0");
-    return `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(ist.getDate())}`;
+    return `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(
+      ist.getDate()
+    )}`;
   } catch {
     return "";
   }
 }
 
-// First day of current month (IST) and today's date (IST)
 function thisMonthRangeIST() {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -37,43 +37,31 @@ function thisMonthRangeIST() {
   const YYYY = ist.getFullYear();
   const MM = pad(ist.getMonth() + 1);
   const from = `${YYYY}-${MM}-01`;
-  const to = toISTDateKey(ist); // today in IST
+  const to = toISTDateKey(ist);
   return { from, to };
 }
 
 export default function DailyConsumption() {
-  // -------- loading / data ----------
   const [loading, setLoading] = useState(false);
-
-  // modes: 'single' | 'range' | 'cumulative'
   const [mode, setMode] = useState("single");
-
-  // data containers
-  const [rows, setRows] = useState([]); // single & cumulative
-  const [groupedDays, setGroupedDays] = useState([]); // range: [{dateKey, items, total?}, ...]
-
-  // pagination (single & cumulative only)
+  const [rows, setRows] = useState([]);
+  const [groupedDays, setGroupedDays] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
-
-  // server filters
-  const [date, setDate] = useState(toISTDateKey(Date.now())); // for single
-  const [dateFrom, setDateFrom] = useState(""); // for range/cumulative
+  const [date, setDate] = useState(toISTDateKey(Date.now()));
+  const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
   const [header, setHeader] = useState("");
   const [subHeader, setSubHeader] = useState("");
   const [industryName, setIndustryName] = useState("");
   const [partCode, setPartCode] = useState("");
-
-  // NEW: "This month" toggle (applies only to range/cumulative)
   const [thisMonth, setThisMonth] = useState(false);
-
-  // Exporting state
   const [exporting, setExporting] = useState(false);
+  const [sortKey, setSortKey] = useState("date_desc");
 
-  // ---- sorting
+  // --- CHANGE 1: UI TEXT ---
+  // Removed special characters from sort options and table headers
   const sortOptionsByMode = {
     single: [
       "Newest day",
@@ -124,18 +112,18 @@ export default function DailyConsumption() {
       "Sub Header ↓",
     ],
     cumulative: [
-      "Closing @ end ↓",
-      "Closing @ end ↑",
-      "Opening @ start ↓",
-      "Opening @ start ↑",
-      "Received Σ ↓",
-      "Received Σ ↑",
-      "Consumed Σ ↓",
-      "Consumed Σ ↑",
+      "Closing ↓",
+      "Closing ↑",
+      "Opening ↓",
+      "Opening ↑",
+      "Received ↓",
+      "Received ↑",
+      "Consumed ↓",
+      "Consumed ↑",
       "MSL ↓",
-      "MSL↑",
-      "Qty Req @ end ↓",
-      "Qty Req @ end ↑",
+      "MSL ↑",
+      "Qty Required ↓",
+      "Qty Required ↑",
       "Industry ↑",
       "Industry ↓",
       "Part Code ↑",
@@ -147,10 +135,6 @@ export default function DailyConsumption() {
     ],
   };
 
-  // internal sortKey identifiers
-  const [sortKey, setSortKey] = useState("date_desc"); // default for single/range
-
-  // map UI sort keys to backend sortBy/order
   const sortParams = useMemo(() => {
     const common = (field, order) => ({ sortBy: field, order });
     if (mode === "cumulative") {
@@ -251,22 +235,21 @@ export default function DailyConsumption() {
   }, [sortKey, mode]);
 
   const sortLabel = useMemo(() => {
-    // reflect current key to label set (just for showing in the dropdown)
     const map = {
       date_desc: "Newest day",
       date_asc: "Oldest day",
-      closing_desc: mode === "cumulative" ? "Closing @ end ↓" : "Closing ↓",
-      closing_asc: mode === "cumulative" ? "Closing @ end ↑" : "Closing ↑",
-      opening_desc: mode === "cumulative" ? "Opening @ start ↓" : "Opening ↓",
-      opening_asc: mode === "cumulative" ? "Opening @ start ↑" : "Opening ↑",
-      received_desc: mode === "cumulative" ? "Received Σ ↓" : "Received ↓",
-      received_asc: mode === "cumulative" ? "Received Σ ↑" : "Received ↑",
-      consumed_desc: mode === "cumulative" ? "Consumed Σ ↓" : "Consumed ↓",
-      consumed_asc: mode === "cumulative" ? "Consumed Σ ↑" : "Consumed ↑",
-      msl_desc: mode === "cumulative" ? "MSL  ↓" : "MSL ↓",
-      msl_asc: mode === "cumulative" ? "MSL ↑" : "MSL ↑",
-      qtyreq_desc: mode === "cumulative" ? "Qty Req @ end ↓" : "Qty Required ↓",
-      qtyreq_asc: mode === "cumulative" ? "Qty Req @ end ↑" : "Qty Required ↑",
+      closing_desc: "Closing ↓",
+      closing_asc: "Closing ↑",
+      opening_desc: "Opening ↓",
+      opening_asc: "Opening ↑",
+      received_desc: "Received ↓",
+      received_asc: "Received ↑",
+      consumed_desc: "Consumed ↓",
+      consumed_asc: "Consumed ↑",
+      msl_desc: "MSL ↓",
+      msl_asc: "MSL ↑",
+      qtyreq_desc: "Qty Required ↓",
+      qtyreq_asc: "Qty Required ↑",
       industry_asc: "Industry ↑",
       industry_desc: "Industry ↓",
       part_asc: "Part Code ↑",
@@ -277,17 +260,14 @@ export default function DailyConsumption() {
       sub_desc: "Sub Header ↓",
     };
     return map[sortKey];
-  }, [sortKey, mode]);
+  }, [sortKey]);
 
-  // ---- change mode: reset sensible defaults
   const onModeChange = (value) => {
     setMode(value);
     setPage(1);
     if (value === "cumulative") {
-      // cumulative doesn't support date sort; default to closing@End desc
       setSortKey("closing_desc");
     } else {
-      // single/range default to newest day
       setSortKey("date_desc");
     }
   };
@@ -295,12 +275,24 @@ export default function DailyConsumption() {
   const applyFilters = async (override = {}) => {
     setLoading(true);
     try {
-      // gather params with possible overrides
-      const localDate = date;
+      const currentMode = override.mode ?? mode;
       const localDateFrom = override.dateFrom ?? dateFrom;
       const localDateTo = override.dateTo ?? dateTo;
 
-      // basic param pack (NO "type" anymore)
+      if (currentMode !== "single" && (!localDateFrom || !localDateTo)) {
+        toast.error("Both From and To dates are required for this mode.");
+        setLoading(false);
+        return;
+      }
+      if (
+        currentMode !== "single" &&
+        new Date(localDateTo) < new Date(localDateFrom)
+      ) {
+        toast.error("To date cannot be before From date.");
+        setLoading(false);
+        return;
+      }
+
       const params = {
         header: header || undefined,
         subHeader: subHeader || undefined,
@@ -310,76 +302,60 @@ export default function DailyConsumption() {
         order: sortParams.order,
       };
 
-      // mode branching
-      if (mode === "single") {
-        params.date = localDate || undefined;
-        params.page = page;
+      if (currentMode === "single") {
+        params.date = date || undefined;
+        params.page = override.page ?? page;
         params.limit = limit;
-      } else if (mode === "range") {
-        if (!localDateFrom || !localDateTo) {
-          setLoading(false);
-          toast.error("Both dateFrom and dateTo are required for range/cumulative modes");
-          return;
-        }
-        // validate order
-        if (new Date(localDateTo) < new Date(localDateFrom)) {
-          setLoading(false);
-          toast.error("To date cannot be before From date");
-          return;
-        }
-        params.dateFrom = localDateFrom;
-        params.dateTo = localDateTo;
       } else {
-        // cumulative
-        if (!localDateFrom || !localDateTo) {
-          setLoading(false);
-          toast.error("Both dateFrom and dateTo are required for range/cumulative modes");
-          return;
-        }
-        if (new Date(localDateTo) < new Date(localDateFrom)) {
-          setLoading(false);
-          toast.error("To date cannot be before From date");
-          return;
-        }
-        params.mode = "cumulative";
         params.dateFrom = localDateFrom;
         params.dateTo = localDateTo;
-        params.page = page;
-        params.limit = limit;
+        if (currentMode === "cumulative") {
+          params.mode = "cumulative";
+          params.page = override.page ?? page;
+          params.limit = limit;
+        }
       }
 
       const res = await getDailyConsumption(params);
       const payload = res?.data?.data || res?.data || {};
 
-      if (mode === "single") {
-        const list = Array.isArray(payload.items) ? payload.items : [];
-        setRows(list);
-        setTotal(Number(payload.total || list.length || 0));
-      } else if (mode === "range") {
-        const days = Array.isArray(payload.days) ? payload.days : [];
-        const normalized = days.map((d) => ({
-          dateKey: d?.dateKey || "",
-          total: Number(d?.total || (Array.isArray(d?.items) ? d.items.length : 0)),
-          items: Array.isArray(d?.items) ? d.items : [],
-        }));
-        setGroupedDays(normalized);
+      if (currentMode === "single") {
+        setRows(payload.items || []);
+        setTotal(payload.total || 0);
+      } else if (currentMode === "range") {
+        const days = payload.days || [];
+        setGroupedDays(days.map((d) => ({ ...d, items: d.items || [] })));
       } else {
-        const list = Array.isArray(payload.items) ? payload.items : [];
-        setRows(list);
-        setTotal(Number(payload.total || list.length || 0));
+        setRows(payload.items || []);
+        setTotal(payload.total || 0);
       }
     } catch (e) {
       console.error(e);
-      toast.error(e?.response?.data?.message || "Failed to load daily consumption");
+      toast.error(
+        e?.response?.data?.message || "Failed to load daily consumption"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // --- CHANGE 2: BEHAVIOR ---
+  // This useEffect no longer automatically fetches data when the mode or sort order changes.
+  // It now only fetches when the page or limit changes.
+  useEffect(() => {
+    // This check prevents an unnecessary API call on initial mount.
+    // The initial data is fetched by the second useEffect below.
+    if (page > 1 || limit !== 50) {
+      applyFilters();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit]);
+
+  // This useEffect fetches data ONLY when the component first mounts.
   useEffect(() => {
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, page, limit, sortParams]);
+  }, []);
 
   const clearFilters = () => {
     setHeader("");
@@ -395,25 +371,15 @@ export default function DailyConsumption() {
     else setSortKey("date_desc");
   };
 
-  // ===== Export support =====
-
-  // Build export params from current UI state (mirrors what's applied)
   const buildExportParams = () => {
-    // Common filters
     const base = {
       header: header || undefined,
       subHeader: subHeader || undefined,
-      // "type" removed from UI; add here if you bring it back later
       industryName: industryName || undefined,
       partCode: partCode || undefined,
       sortBy: sortParams.sortBy,
       order: sortParams.order,
     };
-
-    // Scope mapping:
-    //  - single  -> scope=today, date=selected date
-    //  - range/cumulative + "This month" -> scope=thisMonth, date=today(IST)
-    //  - range/cumulative manual dates   -> scope=range, dateFrom/dateTo
     if (mode === "single") {
       return {
         ...base,
@@ -421,55 +387,36 @@ export default function DailyConsumption() {
         date: date || toISTDateKey(Date.now()),
       };
     }
-
     if (thisMonth) {
-      return {
-        ...base,
-        scope: "thisMonth",
-        date: toISTDateKey(Date.now()), // any date within the month
-      };
+      return { ...base, scope: "thisMonth", date: toISTDateKey(Date.now()) };
     }
-
-    // manual range
-    return {
-      ...base,
-      scope: "range",
-      dateFrom,
-      dateTo,
-    };
+    return { ...base, scope: "range", dateFrom, dateTo };
   };
 
   const onExport = async () => {
     try {
       const params = buildExportParams();
-
-      // Validate when scope=range
-      if (params.scope === "range") {
-        if (!params.dateFrom || !params.dateTo) {
-          toast.error("Both From and To dates are required to export this range.");
-          return;
-        }
-        if (new Date(params.dateTo) < new Date(params.dateFrom)) {
-          toast.error("To date cannot be before From date.");
-          return;
-        }
+      if (params.scope === "range" && (!params.dateFrom || !params.dateTo)) {
+        toast.error(
+          "Both From and To dates are required to export this range."
+        );
+        return;
       }
-
+      if (
+        params.scope === "range" &&
+        new Date(params.dateTo) < new Date(params.dateFrom)
+      ) {
+        toast.error("To date cannot be before From date.");
+        return;
+      }
       setExporting(true);
       const res = await exportDailyConsumption(params);
-
-      // Build a friendly filename
       let suffix = "";
-      if (params.scope === "today") {
-        suffix = params.date;
-      } else if (params.scope === "thisMonth") {
+      if (params.scope === "today") suffix = params.date;
+      else if (params.scope === "thisMonth")
         suffix = `this-month_${params.date}`;
-      } else {
-        suffix = `${params.dateFrom}_to_${params.dateTo}`;
-      }
+      else suffix = `${params.dateFrom}_to_${params.dateTo}`;
       const filename = `daily_export_${suffix}.xlsx`;
-
-      // Download
       const blob = new Blob([res.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -489,7 +436,6 @@ export default function DailyConsumption() {
     }
   };
 
-  /* ---------- table heads ---------- */
   const TableHeadDay = () => (
     <thead>
       <tr>
@@ -527,12 +473,12 @@ export default function DailyConsumption() {
           "Sub Header",
           "Industry",
           "Part Code",
-          "Opening @ Start",
-          "Received Σ",
-          "Consumed Σ",
-          "Closing @ End",
+          "Opening",
+          "Received",
+          "Consumed",
+          "Closing",
           "MSL",
-          "Qty Req @ End",
+          "Qty Required",
           "Invoices",
         ].map((h) => (
           <th
@@ -546,7 +492,6 @@ export default function DailyConsumption() {
     </thead>
   );
 
-  /* ---------- row renderers ---------- */
   const renderRowDay = (item, idx, startIndex = 0) => {
     const belowMsl = Number(item.closing) < Number(item.msl);
     const needed = Number(item.quantityRequired) > 0;
@@ -555,28 +500,46 @@ export default function DailyConsumption() {
         key={`${item.dateKey}-${item.industryName}-${item.partCode}-${idx}`}
         className="odd:bg-white/5 even:bg-transparent hover:bg-white/10 transition-colors"
       >
-        <td className="border border-[#162134] px-4 py-2">{startIndex + idx + 1}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.dateKey || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.header || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.subHeader || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.industryName || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.partCode || "-"}</td>
+        <td className="border border-[#162134] px-4 py-2">
+          {startIndex + idx + 1}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.dateKey || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.header || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.subHeader || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.industryName || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.partCode || "-"}
+        </td>
         <td className="border border-[#162134] px-4 py-2">{item.msl ?? "—"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.opening ?? "—"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.receivedQty ?? "—"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.consumedQty ?? "—"}</td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.opening ?? "—"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.receivedQty ?? "—"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.consumedQty ?? "—"}
+        </td>
         <td
-          className={
-            "border border-[#162134] px-4 py-2 " + (belowMsl ? "bg-red-900/30" : "")
-          }
+          className={`border border-[#162134] px-4 py-2 ${
+            belowMsl ? "bg-red-900/30" : ""
+          }`}
           title={belowMsl ? "Below MSL" : ""}
         >
           {item.closing ?? "—"}
         </td>
         <td
-          className={
-            "border border-[#162134] px-4 py-2 " + (needed ? "bg-amber-900/30" : "")
-          }
+          className={`border border-[#162134] px-4 py-2 ${
+            needed ? "bg-amber-900/30" : ""
+          }`}
           title={needed ? "Quantity required" : ""}
         >
           {item.quantityRequired ?? 0}
@@ -594,27 +557,45 @@ export default function DailyConsumption() {
         key={`${item.industryName}-${item.partCode}-${idx}`}
         className="odd:bg-white/5 even:bg-transparent hover:bg-white/10 transition-colors"
       >
-        <td className="border border-[#162134] px-4 py-2">{startIndex + idx + 1}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.header || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.subHeader || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.industryName || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.partCode || "-"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.openingAtStart ?? "—"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.receivedQtySum ?? "—"}</td>
-        <td className="border border-[#162134] px-4 py-2">{item.consumedQtySum ?? "—"}</td>
+        <td className="border border-[#162134] px-4 py-2">
+          {startIndex + idx + 1}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.header || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.subHeader || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.industryName || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.partCode || "-"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.openingAtStart ?? "—"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.receivedQtySum ?? "—"}
+        </td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.consumedQtySum ?? "—"}
+        </td>
         <td
-          className={
-            "border border-[#162134] px-4 py-2 " + (belowMsl ? "bg-red-900/30" : "")
-          }
+          className={`border border-[#162134] px-4 py-2 ${
+            belowMsl ? "bg-red-900/30" : ""
+          }`}
           title={belowMsl ? "Below MSL at end" : ""}
         >
           {item.closingAtEnd ?? "—"}
         </td>
-        <td className="border border-[#162134] px-4 py-2">{item.mslAtEnd ?? "—"}</td>
+        <td className="border border-[#162134] px-4 py-2">
+          {item.mslAtEnd ?? "—"}
+        </td>
         <td
-          className={
-            "border border-[#162134] px-4 py-2 " + (needed ? "bg-amber-900/30" : "")
-          }
+          className={`border border-[#162134] px-4 py-2 ${
+            needed ? "bg-amber-900/30" : ""
+          }`}
           title={needed ? "Quantity required at end" : ""}
         >
           {item.quantityRequiredAtEnd ?? 0}
@@ -626,104 +607,32 @@ export default function DailyConsumption() {
     );
   };
 
-  // map label back to sortKey when user picks from dropdown
   const onSortChange = (label) => {
-    // cumulative labels
-    if (mode === "cumulative") {
-      switch (label) {
-        case "Closing @ end ↓":
-          return setSortKey("closing_desc");
-        case "Closing @ end ↑":
-          return setSortKey("closing_asc");
-        case "Opening @ start ↓":
-          return setSortKey("opening_desc");
-        case "Opening @ start ↑":
-          return setSortKey("opening_asc");
-        case "Received Σ ↓":
-          return setSortKey("received_desc");
-        case "Received Σ ↑":
-          return setSortKey("received_asc");
-        case "Consumed Σ ↓":
-          return setSortKey("consumed_desc");
-        case "Consumed Σ ↑":
-          return setSortKey("consumed_asc");
-        case "MSL ↓":
-          return setSortKey("msl_desc");
-        case "MSL ↑":
-          return setSortKey("msl_asc");
-        case "Qty Req @ end ↓":
-          return setSortKey("qtyreq_desc");
-        case "Qty Req @ end ↑":
-          return setSortKey("qtyreq_asc");
-        case "Industry ↑":
-          return setSortKey("industry_asc");
-        case "Industry ↓":
-          return setSortKey("industry_desc");
-        case "Part Code ↑":
-          return setSortKey("part_asc");
-        case "Part Code ↓":
-          return setSortKey("part_desc");
-        case "Header ↑":
-          return setSortKey("header_asc");
-        case "Header ↓":
-          return setSortKey("header_desc");
-        case "Sub Header ↑":
-          return setSortKey("sub_asc");
-        case "Sub Header ↓":
-          return setSortKey("sub_desc");
-        default:
-          return;
-      }
-    }
-    // single/range labels
-    switch (label) {
-      case "Newest day":
-        return setSortKey("date_desc");
-      case "Oldest day":
-        return setSortKey("date_asc");
-      case "Closing ↓":
-        return setSortKey("closing_desc");
-      case "Closing ↑":
-        return setSortKey("closing_asc");
-      case "Opening ↓":
-        return setSortKey("opening_desc");
-      case "Opening ↑":
-        return setSortKey("opening_asc");
-      case "Received ↓":
-        return setSortKey("received_desc");
-      case "Received ↑":
-        return setSortKey("received_asc");
-      case "Consumed ↓":
-        return setSortKey("consumed_desc");
-      case "Consumed ↑":
-        return setSortKey("consumed_asc");
-      case "MSL ↓":
-        return setSortKey("msl_desc");
-      case "MSL ↑":
-        return setSortKey("msl_asc");
-      case "Qty Required ↓":
-        return setSortKey("qtyreq_desc");
-      case "Qty Required ↑":
-        return setSortKey("qtyreq_asc");
-      case "Industry ↑":
-        return setSortKey("industry_asc");
-      case "Industry ↓":
-        return setSortKey("industry_desc");
-      case "Part Code ↑":
-        return setSortKey("part_asc");
-      case "Part Code ↓":
-        return setSortKey("part_desc");
-      case "Header ↑":
-        return setSortKey("header_asc");
-      case "Header ↓":
-        return setSortKey("header_desc");
-      case "Sub Header ↑":
-        return setSortKey("sub_asc");
-      case "Sub Header ↓":
-        return setSortKey("sub_desc");
-      default:
-        return;
-    }
+    const keyMap = {
+      "Newest day": "date_desc",
+      "Oldest day": "date_asc",
+      "Closing ↓": "closing_desc",
+      "Closing ↑": "closing_asc",
+      "Opening ↓": "opening_desc",
+      "Opening ↑": "opening_asc",
+      "Received ↓": "received_desc",
+      "Received ↑": "received_asc",
+      "Consumed ↓": "consumed_desc",
+      "Consumed ↑": "consumed_asc",
+      "MSL ↓": "msl_desc",
+      "MSL ↑": "msl_asc",
+      "Qty Required ↓": "qtyreq_desc",
+      "Qty Required ↑": "qtyreq_asc",
+      "Industry ↑": "industry_asc",
+      "Industry ↓": "industry_desc",
+      "Part Code ↑": "part_asc",
+      "Part Code ↓": "part_desc",
+      "Header ↑": "header_asc",
+      "Header ↓": "header_desc",
+      "Sub Header ↑": "sub_asc",
+      "Sub Header ↓": "sub_desc",
+    };
+    setSortKey(keyMap[label]);
   };
 
   return (
@@ -738,7 +647,6 @@ export default function DailyConsumption() {
       <div className="relative z-[60] flex flex-col gap-4 mb-4">
         <div className={`${cardCls} overflow-visible min-h-[160px]`}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-            {/* Mode selector */}
             <div className="md:col-span-3">
               <Dropdown
                 label="Mode"
@@ -750,20 +658,19 @@ export default function DailyConsumption() {
                     ? "Per-day range"
                     : "Cumulative range"
                 }
-                onChange={(label) => {
-                  const v =
+                onChange={(label) =>
+                  onModeChange(
                     label === "Single day"
                       ? "single"
                       : label === "Per-day range"
                       ? "range"
-                      : "cumulative";
-                  onModeChange(v);
-                }}
+                      : "cumulative"
+                  )
+                }
                 disableSearch
               />
             </div>
 
-            {/* Date(s) */}
             {mode === "single" ? (
               <div className="md:col-span-3">
                 <label className="block text-sm mb-1">Date (IST)</label>
@@ -786,7 +693,7 @@ export default function DailyConsumption() {
                     value={dateFrom}
                     onChange={(e) => {
                       setDateFrom(e.target.value);
-                      setThisMonth(false); // manual change disables "This month"
+                      setThisMonth(false);
                     }}
                     className={inputCls}
                   />
@@ -798,13 +705,11 @@ export default function DailyConsumption() {
                     value={dateTo}
                     onChange={(e) => {
                       setDateTo(e.target.value);
-                      setThisMonth(false); // manual change disables "This month"
+                      setThisMonth(false);
                     }}
                     className={inputCls}
                   />
                 </div>
-
-                {/* NEW: This month quick filter */}
                 <div className="md:col-span-2 flex items-end">
                   <label className="inline-flex items-center gap-2 select-none">
                     <input
@@ -818,8 +723,6 @@ export default function DailyConsumption() {
                           const { from, to } = thisMonthRangeIST();
                           setDateFrom(from);
                           setDateTo(to);
-                          // auto-apply immediately with overrides
-                          applyFilters({ dateFrom: from, dateTo: to });
                         }
                       }}
                     />
@@ -829,7 +732,6 @@ export default function DailyConsumption() {
               </>
             )}
 
-            {/* Filters */}
             <div className="md:col-span-2">
               <label className="block text-sm mb-1">Header</label>
               <input
@@ -839,7 +741,6 @@ export default function DailyConsumption() {
                 placeholder="e.g. PACKING MATERIAL"
               />
             </div>
-
             <div className="md:col-span-2">
               <label className="block text-sm mb-1">Sub Header</label>
               <input
@@ -849,7 +750,6 @@ export default function DailyConsumption() {
                 placeholder="e.g. BUBBLE WRAP"
               />
             </div>
-
             <div className="md:col-span-2">
               <label className="block text-sm mb-1">Industry Name</label>
               <input
@@ -859,7 +759,6 @@ export default function DailyConsumption() {
                 placeholder="e.g. bby crtn"
               />
             </div>
-
             <div className="md:col-span-2">
               <label className="block text-sm mb-1">Part Code</label>
               <input
@@ -869,7 +768,6 @@ export default function DailyConsumption() {
                 placeholder="e.g. 258258"
               />
             </div>
-
             <div className="md:col-span-3">
               <Dropdown
                 label="Sort"
@@ -879,7 +777,6 @@ export default function DailyConsumption() {
                 disableSearch
               />
             </div>
-
             {(mode === "single" || mode === "cumulative") && (
               <div className="md:col-span-2">
                 <Dropdown
@@ -898,7 +795,7 @@ export default function DailyConsumption() {
             <div className="md:col-span-3 flex items-end gap-2">
               <button
                 type="button"
-                onClick={applyFilters}
+                onClick={() => applyFilters()}
                 className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-shadow shadow-md hover:shadow-lg"
               >
                 Apply
@@ -932,18 +829,22 @@ export default function DailyConsumption() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="text-center text-white/80 px-4 py-6">
+                  <td
+                    colSpan={12}
+                    className="text-center text-white/80 px-4 py-6"
+                  >
                     No data for the selected day.
                   </td>
                 </tr>
               ) : (
-                rows.map((item, idx) => renderRowDay(item, idx, (page - 1) * limit))
+                rows.map((item, idx) =>
+                  renderRowDay(item, idx, (page - 1) * limit)
+                )
               )}
             </tbody>
           </table>
         </div>
       )}
-
       {mode === "range" && (
         <div className="space-y-6">
           {groupedDays.length === 0 ? (
@@ -954,7 +855,7 @@ export default function DailyConsumption() {
             groupedDays.map((day, di) => (
               <div
                 key={`${day.dateKey}-${di}`}
-                className="w-full overflow-x-auto custom-scrollbar  rounded-xl bg-white/5 backdrop-blur-md border border-white/10"
+                className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10"
               >
                 <div className="px-4 pt-4 text-white/90 font-semibold">
                   Date: {day.dateKey || "—"}{" "}
@@ -967,7 +868,10 @@ export default function DailyConsumption() {
                       day.items.map((item, idx) => renderRowDay(item, idx))
                     ) : (
                       <tr>
-                        <td colSpan={12} className="text-center text-white/80 px-4 py-6">
+                        <td
+                          colSpan={12}
+                          className="text-center text-white/80 px-4 py-6"
+                        >
                           No rows for this day.
                         </td>
                       </tr>
@@ -979,7 +883,6 @@ export default function DailyConsumption() {
           )}
         </div>
       )}
-
       {mode === "cumulative" && (
         <div className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
           <table className="w-full min-w-[1200px] table-auto border-collapse">
@@ -987,12 +890,17 @@ export default function DailyConsumption() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="text-center text-white/80 px-4 py-6">
+                  <td
+                    colSpan={12}
+                    className="text-center text-white/80 px-4 py-6"
+                  >
                     No data for the selected range.
                   </td>
                 </tr>
               ) : (
-                rows.map((item, idx) => renderRowCumulative(item, idx, (page - 1) * limit))
+                rows.map((item, idx) =>
+                  renderRowCumulative(item, idx, (page - 1) * limit)
+                )
               )}
             </tbody>
           </table>
@@ -1014,7 +922,9 @@ export default function DailyConsumption() {
           </span>
           <button
             onClick={() => setPage((p) => p + 1)}
-            disabled={page >= Math.max(1, Math.ceil((total || 0) / (limit || 1)))}
+            disabled={
+              page >= Math.max(1, Math.ceil((total || 0) / (limit || 1)))
+            }
             className="px-3 py-1 rounded bg-gray-600 disabled:opacity-50"
           >
             Next

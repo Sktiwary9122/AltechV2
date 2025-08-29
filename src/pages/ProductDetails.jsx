@@ -127,7 +127,7 @@ export default function ProductDetails() {
     setSubmitting(true);
     try {
       // backend expects `product`
-      await createProductDetail({productName, modelNumber });
+      await createProductDetail({ productName, modelNumber });
       toast.success("Product created");
       setShowCreate(false);
       resetForm();
@@ -221,29 +221,29 @@ export default function ProductDetails() {
 
       {/* Header row */}
       <div className="flex flex-col gap-4 sm:gap-5 mb-5 sm:flex-col md:flex-row md:items-center md:justify-between">
-  <h1 className="text-xl sm:text-2xl font-bold">Product Details</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Product Details</h1>
 
-  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
-    <input
-      type="text"
-      placeholder="Search product or model"
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="w-full sm:w-auto flex-1 sm:flex-initial md:w-72 px-4 py-2.5 rounded-lg bg-black/30 text-white placeholder-white/70 border border-indigo-400 focus:outline-none ring-2 ring-indigo-500 transition"
-    />
-    {canCreate && (
-      <button
-        onClick={openCreate}
-        className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-shadow shadow-md hover:shadow-lg"
-      >
-        + Create
-      </button>
-    )}
-  </div>
-</div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
+          <input
+            type="text"
+            placeholder="Search product or model"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-auto flex-1 sm:flex-initial md:w-72 px-4 py-2.5 rounded-lg bg-black/30 text-white placeholder-white/70 border border-indigo-400 focus:outline-none ring-2 ring-indigo-500 transition"
+          />
+          {canCreate && (
+            <button
+              onClick={openCreate}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-shadow shadow-md hover:shadow-lg"
+            >
+              + Create
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Table */}
-      <div className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
+      <div className="w-full overflow-auto custom-scrollbar max-h-[600px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
         <table className="min-w-full table-auto border-collapse">
           <thead>
             <tr>
