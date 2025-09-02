@@ -7,7 +7,7 @@ import axios from "axios";
 /* ============================================
    AXIOS: base URL + Bearer token from storage
    ============================================ */
-const BASE_URL = "http://localhost:8000/api"; // change if needed
+const BASE_URL = "https://api.altechsolution.in/api"; // change if needed
 
 const api = axios.create({ baseURL: BASE_URL });
 

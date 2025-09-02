@@ -2,11 +2,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import {
-  listPartEntries,         // GET /part-entries (filters)
-  bulkCreatePartEntries,   // POST /part-entries/bulk
-  updatePartEntry,         // PATCH /part-entries/:id
-  deletePartEntry,         // DELETE /part-entries/:id
-  listIndustryCodes,       // GET /parts-required/industry-codes
+  listPartEntries, // GET /part-entries (filters)
+  bulkCreatePartEntries, // POST /part-entries/bulk
+  updatePartEntry, // PATCH /part-entries/:id
+  deletePartEntry, // DELETE /part-entries/:id
+  listIndustryCodes, // GET /parts-required/industry-codes
 } from "../api/api";
 import Spinner from "../components/Spinner";
 import DotLoader from "../components/DotLoader";
@@ -58,7 +58,9 @@ function rowMatchesQuery(row, q) {
     String(row.quantity ?? ""),
     String(row.rate ?? ""),
   ];
-  return fields.some((f) => (f || "").toString().toLowerCase().includes(needle));
+  return fields.some((f) =>
+    (f || "").toString().toLowerCase().includes(needle)
+  );
 }
 
 // ---------- Component ----------
@@ -71,7 +73,7 @@ export default function PartEntries() {
     canAccessPage(role, PAGES.VIEW_PART_ENTRIES);
 
   const canCreate = canDo(role, ACTIONS.PART_ENTRY_CREATE);
-  const canEdit   = canDo(role, ACTIONS.PART_ENTRY_EDIT);
+  const canEdit = canDo(role, ACTIONS.PART_ENTRY_EDIT);
   const canDelete = canDo(role, ACTIONS.PART_ENTRY_DELETE);
 
   /* ------------------------ State -------------------------- */
@@ -92,18 +94,27 @@ export default function PartEntries() {
   const [sortKey, setSortKey] = useState("purchaseDate_desc");
   const sortParams = useMemo(() => {
     switch (sortKey) {
-      case "purchaseDate_asc":  return { sortBy: "purchaseDate", order: "asc" };
-      case "quantity_desc":     return { sortBy: "quantity", order: "desc" };
-      case "quantity_asc":      return { sortBy: "quantity", order: "asc" };
-      case "rate_desc":         return { sortBy: "rate", order: "desc" };
-      case "rate_asc":          return { sortBy: "rate", order: "asc" };
-      default:                  return { sortBy: "purchaseDate", order: "desc" };
+      case "purchaseDate_asc":
+        return { sortBy: "purchaseDate", order: "asc" };
+      case "quantity_desc":
+        return { sortBy: "quantity", order: "desc" };
+      case "quantity_asc":
+        return { sortBy: "quantity", order: "asc" };
+      case "rate_desc":
+        return { sortBy: "rate", order: "desc" };
+      case "rate_asc":
+        return { sortBy: "rate", order: "asc" };
+      default:
+        return { sortBy: "purchaseDate", order: "desc" };
     }
   }, [sortKey]);
 
   // industry → codes map
   const [industryMap, setIndustryMap] = useState({});
-  const industryOptions = useMemo(() => Object.keys(industryMap), [industryMap]);
+  const industryOptions = useMemo(
+    () => Object.keys(industryMap),
+    [industryMap]
+  );
 
   // Create modal + confirmation
   const [showCreate, setShowCreate] = useState(false);
@@ -150,7 +161,9 @@ export default function PartEntries() {
       setTotalPages(Math.max(1, Math.ceil(total / (lim || 1))));
     } catch (err) {
       console.error(err);
-      toast.error(err?.response?.data?.message || "Failed to load part entries");
+      toast.error(
+        err?.response?.data?.message || "Failed to load part entries"
+      );
     } finally {
       setLoading(false);
     }
@@ -234,19 +247,24 @@ export default function PartEntries() {
         .filter((_, i) => i !== idx)
         .map((it) => `${it.industryName}__${it.partCode}`)
     );
-    return all.filter((code) => !taken.has(`${industry}__${code}`) || bulkItems[idx].partCode === code);
+    return all.filter(
+      (code) =>
+        !taken.has(`${industry}__${code}`) || bulkItems[idx].partCode === code
+    );
   };
 
   // Validate bulk
   const validateBulk = () => {
     const errs = [];
-    if (!bulkHeader.invoiceNumber.trim()) errs.push("Invoice number is required");
+    if (!bulkHeader.invoiceNumber.trim())
+      errs.push("Invoice number is required");
     if (!Array.isArray(bulkItems) || bulkItems.length === 0)
       errs.push("Please add at least one item");
 
     bulkItems.forEach((it, idx) => {
       const row = idx + 1;
-      if (!it.industryName.trim()) errs.push(`Row ${row}: Industry is required`);
+      if (!it.industryName.trim())
+        errs.push(`Row ${row}: Industry is required`);
       if (!it.partCode.trim()) errs.push(`Row ${row}: Part code is required`);
       if (!it.quantity || Number(it.quantity) <= 0)
         errs.push(`Row ${row}: Quantity must be > 0`);
@@ -255,12 +273,18 @@ export default function PartEntries() {
 
       // ensure pair uniqueness
       if (isPairTakenElsewhere(it.industryName, it.partCode, idx)) {
-        errs.push(`Row ${row}: Duplicate (industry, part code) in this invoice`);
+        errs.push(
+          `Row ${row}: Duplicate (industry, part code) in this invoice`
+        );
       }
 
       // ensure code belongs to industry (if industry has known codes)
       const validCodes = codesForIndustry(it.industryName);
-      if (it.partCode && validCodes.length && !validCodes.includes(it.partCode)) {
+      if (
+        it.partCode &&
+        validCodes.length &&
+        !validCodes.includes(it.partCode)
+      ) {
         errs.push(`Row ${row}: Selected part code not valid for industry`);
       }
     });
@@ -413,7 +437,9 @@ export default function PartEntries() {
         <div className="w-full md:w-auto bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 overflow-visible">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div className="md:col-span-2">
-              <label className="block text-sm mb-1">Search (invoice / text)</label>
+              <label className="block text-sm mb-1">
+                Search (invoice / text)
+              </label>
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -422,7 +448,8 @@ export default function PartEntries() {
               />
               {q.trim() && localMatches.length > 0 && (
                 <div className="mt-1 text-xs text-white/70">
-                  Showing {localMatches.length} local match{localMatches.length > 1 ? "es" : ""} on this page.
+                  Showing {localMatches.length} local match
+                  {localMatches.length > 1 ? "es" : ""} on this page.
                 </div>
               )}
             </div>
@@ -460,7 +487,8 @@ export default function PartEntries() {
                 onChange={(v) => {
                   if (v.includes("Newest")) setSortKey("purchaseDate_desc");
                   else if (v.includes("Oldest")) setSortKey("purchaseDate_asc");
-                  else if (v.includes("Quantity ↓")) setSortKey("quantity_desc");
+                  else if (v.includes("Quantity ↓"))
+                    setSortKey("quantity_desc");
                   else if (v.includes("Quantity ↑")) setSortKey("quantity_asc");
                   else if (v.includes("Rate ↓")) setSortKey("rate_desc");
                   else setSortKey("rate_asc");
@@ -475,7 +503,9 @@ export default function PartEntries() {
                 onClick={() => {
                   // Only hit API if no local matches (or no query)
                   if (q.trim() && localMatches.length > 0) {
-                    toast.info("Showing local matches. Clear search or change page to fetch again.");
+                    toast.info(
+                      "Showing local matches. Clear search or change page to fetch again."
+                    );
                     return;
                   }
                   setFiltersVersion((v) => v + 1);
@@ -508,7 +538,7 @@ export default function PartEntries() {
       </div>
 
       {/* Table */}
-      <div className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
+      <div className="w-full overflow-auto custom-scrollbar max-h-[450px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
         <table className="min-w-full table-auto border-collapse">
           <thead>
             <tr>
@@ -536,7 +566,10 @@ export default function PartEntries() {
           <tbody>
             {displayRows.length === 0 ? (
               <tr>
-                <td colSpan={8 + (canEdit ? 1 : 0) + (canDelete ? 1 : 0)} className="text-center text-white/80 px-4 py-6">
+                <td
+                  colSpan={8 + (canEdit ? 1 : 0) + (canDelete ? 1 : 0)}
+                  className="text-center text-white/80 px-4 py-6"
+                >
                   No entries found
                 </td>
               </tr>
@@ -546,18 +579,34 @@ export default function PartEntries() {
                   key={row._id || idx}
                   className="odd:bg-white/5 even:bg-transparent hover:bg-white/10 transition-colors"
                 >
-                  <td className="border border-[#162134] px-4 py-2">{(page - 1) * limit + idx + 1}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.industryName}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.partCode}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.quantity}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.rate}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.invoiceNumber}</td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {(page - 1) * limit + idx + 1}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.industryName}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.partCode}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.quantity}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.rate}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.invoiceNumber}
+                  </td>
                   <td className="border border-[#162134] px-4 py-2">
                     {row.purchaseDate
-                      ? new Date(row.purchaseDate).toLocaleDateString("en-GB", { timeZone: "Asia/Kolkata" })
+                      ? new Date(row.purchaseDate).toLocaleDateString("en-GB", {
+                          timeZone: "Asia/Kolkata",
+                        })
                       : ""}
                   </td>
-                  <td className="border border-[#162134] px-4 py-2">{row.batchRemaining ?? "-"}</td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.batchRemaining ?? "-"}
+                  </td>
 
                   {canEdit && (
                     <td className="border border-[#162134] px-4 py-2 text-center">
@@ -595,7 +644,9 @@ export default function PartEntries() {
         >
           Prev
         </button>
-        <span className="text-white/80">Page {page} / {totalPages}</span>
+        <span className="text-white/80">
+          Page {page} / {totalPages}
+        </span>
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           className="px-3 py-1 rounded bg-gray-600 disabled:opacity-50"
@@ -611,7 +662,9 @@ export default function PartEntries() {
           <div className="min-h-full flex items-center justify-center p-4">
             {/* NOTE: overflow-visible so dropdown menus can escape the card */}
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-4xl  overflow-visible">
-              <h3 className="text-xl font-semibold text-center mb-4">Create Entries</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Create Entries
+              </h3>
 
               {/* Header fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -619,7 +672,12 @@ export default function PartEntries() {
                   <label className="block text-sm mb-1">Invoice Number *</label>
                   <input
                     value={bulkHeader.invoiceNumber}
-                    onChange={(e) => setBulkHeader((h) => ({ ...h, invoiceNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setBulkHeader((h) => ({
+                        ...h,
+                        invoiceNumber: e.target.value,
+                      }))
+                    }
                     className={inputCls}
                     placeholder="INV-2025-001"
                   />
@@ -629,7 +687,12 @@ export default function PartEntries() {
                   <input
                     type="date"
                     value={bulkHeader.purchaseDate}
-                    onChange={(e) => setBulkHeader((h) => ({ ...h, purchaseDate: e.target.value }))}
+                    onChange={(e) =>
+                      setBulkHeader((h) => ({
+                        ...h,
+                        purchaseDate: e.target.value,
+                      }))
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -640,7 +703,10 @@ export default function PartEntries() {
                 {bulkItems.map((it, idx) => {
                   const codeOptions = filteredCodeOptions(it.industryName, idx);
                   return (
-                    <div key={idx} className="rounded-lg border border-white/10 p-3 overflow-visible">
+                    <div
+                      key={idx}
+                      className="rounded-lg border border-white/10 p-3 overflow-visible"
+                    >
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                         {/* High z-index & relative so the menu stacks above nearby content */}
                         <div className="md:col-span-2 relative overflow-visible">
@@ -673,8 +739,12 @@ export default function PartEntries() {
                             options={codeOptions}
                             value={it.partCode}
                             onChange={(val) => {
-                              if (isPairTakenElsewhere(it.industryName, val, idx)) {
-                                toast.warn("That industry + part code is already added.");
+                              if (
+                                isPairTakenElsewhere(it.industryName, val, idx)
+                              ) {
+                                toast.warn(
+                                  "That industry + part code is already added."
+                                );
                                 return;
                               }
                               setBulkItems((arr) => {
@@ -690,14 +760,19 @@ export default function PartEntries() {
                         </div>
 
                         <div>
-                          <label className="block text-sm mb-1">Quantity *</label>
+                          <label className="block text-sm mb-1">
+                            Quantity *
+                          </label>
                           <input
                             type="number"
                             value={it.quantity}
                             onChange={(e) =>
                               setBulkItems((arr) => {
                                 const next = [...arr];
-                                next[idx] = { ...next[idx], quantity: e.target.value };
+                                next[idx] = {
+                                  ...next[idx],
+                                  quantity: e.target.value,
+                                };
                                 return next;
                               })
                             }
@@ -712,7 +787,10 @@ export default function PartEntries() {
                             onChange={(e) =>
                               setBulkItems((arr) => {
                                 const next = [...arr];
-                                next[idx] = { ...next[idx], rate: e.target.value };
+                                next[idx] = {
+                                  ...next[idx],
+                                  rate: e.target.value,
+                                };
                                 return next;
                               })
                             }
@@ -726,7 +804,9 @@ export default function PartEntries() {
                           <button
                             type="button"
                             onClick={() =>
-                              setBulkItems((arr) => arr.filter((_, i) => i !== idx))
+                              setBulkItems((arr) =>
+                                arr.filter((_, i) => i !== idx)
+                              )
                             }
                             className="px-3 py-1 rounded bg-red-600 hover:bg-red-700"
                           >
@@ -742,7 +822,9 @@ export default function PartEntries() {
               <div className="flex justify-between mt-4">
                 <button
                   type="button"
-                  onClick={() => setBulkItems((arr) => [...arr, { ...emptyItem }])}
+                  onClick={() =>
+                    setBulkItems((arr) => [...arr, { ...emptyItem }])
+                  }
                   className="px-4 py-2 rounded-lg border border-white/20 hover:bg-white/5"
                 >
                   + Add Item
@@ -774,19 +856,26 @@ export default function PartEntries() {
         <div className="fixed inset-0 z-[95] bg-black/70 overflow-y-auto">
           <div className="min-h-full flex items-center justify-center p-4">
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-auto">
-              <h3 className="text-xl font-semibold text-center mb-4">Confirm</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Confirm
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <div className="text-white/70 text-sm">Invoice Number</div>
-                  <div className="text-white text-lg font-semibold">{bulkHeader.invoiceNumber || "-"}</div>
+                  <div className="text-white text-lg font-semibold">
+                    {bulkHeader.invoiceNumber || "-"}
+                  </div>
                 </div>
                 <div>
                   <div className="text-white/70 text-sm">Purchase Date</div>
                   <div className="text-white text-lg font-semibold">
                     {bulkHeader.purchaseDate
-                      ? new Date(toISTISOString(bulkHeader.purchaseDate))
-                          .toLocaleDateString("en-GB", { timeZone: "Asia/Kolkata" })
+                      ? new Date(
+                          toISTISOString(bulkHeader.purchaseDate)
+                        ).toLocaleDateString("en-GB", {
+                          timeZone: "Asia/Kolkata",
+                        })
                       : "-"}
                   </div>
                 </div>
@@ -796,8 +885,17 @@ export default function PartEntries() {
                 <table className="min-w-full table-auto border-collapse">
                   <thead>
                     <tr>
-                      {["#", "Industry Name", "Part Code", "Quantity", "Rate"].map((h) => (
-                        <th key={h} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">
+                      {[
+                        "#",
+                        "Industry Name",
+                        "Part Code",
+                        "Quantity",
+                        "Rate",
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                        >
                           {h}
                         </th>
                       ))}
@@ -805,12 +903,25 @@ export default function PartEntries() {
                   </thead>
                   <tbody>
                     {bulkItems.map((it, idx) => (
-                      <tr key={idx} className="odd:bg-white/5 even:bg-transparent">
-                        <td className="border border-[#162134] px-4 py-2">{idx + 1}</td>
-                        <td className="border border-[#162134] px-4 py-2">{it.industryName || "-"}</td>
-                        <td className="border border-[#162134] px-4 py-2">{it.partCode || "-"}</td>
-                        <td className="border border-[#162134] px-4 py-2">{it.quantity || "-"}</td>
-                        <td className="border border-[#162134] px-4 py-2">{it.rate || "-"}</td>
+                      <tr
+                        key={idx}
+                        className="odd:bg-white/5 even:bg-transparent"
+                      >
+                        <td className="border border-[#162134] px-4 py-2">
+                          {idx + 1}
+                        </td>
+                        <td className="border border-[#162134] px-4 py-2">
+                          {it.industryName || "-"}
+                        </td>
+                        <td className="border border-[#162134] px-4 py-2">
+                          {it.partCode || "-"}
+                        </td>
+                        <td className="border border-[#162134] px-4 py-2">
+                          {it.quantity || "-"}
+                        </td>
+                        <td className="border border-[#162134] px-4 py-2">
+                          {it.rate || "-"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -843,7 +954,9 @@ export default function PartEntries() {
       {showEdit && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-xl">
-            <h3 className="text-xl font-semibold text-center mb-4">Edit Part Entry</h3>
+            <h3 className="text-xl font-semibold text-center mb-4">
+              Edit Part Entry
+            </h3>
             <form onSubmit={submitEdit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
@@ -851,7 +964,9 @@ export default function PartEntries() {
                   <input
                     type="number"
                     value={editForm.quantity}
-                    onChange={(e) => setEditForm((f) => ({ ...f, quantity: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, quantity: e.target.value }))
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -860,7 +975,9 @@ export default function PartEntries() {
                   <input
                     type="number"
                     value={editForm.rate}
-                    onChange={(e) => setEditForm((f) => ({ ...f, rate: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, rate: e.target.value }))
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -869,7 +986,12 @@ export default function PartEntries() {
                   <input
                     type="date"
                     value={editForm.purchaseDate}
-                    onChange={(e) => setEditForm((f) => ({ ...f, purchaseDate: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({
+                        ...f,
+                        purchaseDate: e.target.value,
+                      }))
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -877,17 +999,30 @@ export default function PartEntries() {
                   <label className="block text-sm mb-1">Invoice #</label>
                   <input
                     value={editForm.invoiceNumber}
-                    onChange={(e) => setEditForm((f) => ({ ...f, invoiceNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({
+                        ...f,
+                        invoiceNumber: e.target.value,
+                      }))
+                    }
                     className={inputCls}
                   />
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowEdit(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded">
+                <button
+                  type="button"
+                  onClick={() => setShowEdit(null)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded flex items-center justify-center">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded flex items-center justify-center"
+                >
                   {submitting ? <DotLoader /> : "Update"}
                 </button>
               </div>
@@ -902,15 +1037,24 @@ export default function PartEntries() {
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-sm">
             <h3 className="text-xl font-semibold mb-3">Confirm Delete</h3>
             <p className="mb-4">
-              Delete entry <span className="font-semibold">{showDelete.invoiceNumber}</span> for{" "}
+              Delete entry{" "}
+              <span className="font-semibold">{showDelete.invoiceNumber}</span>{" "}
+              for{" "}
               <span className="font-semibold">{showDelete.industryName}</span> (
               <span className="font-semibold">{showDelete.partCode}</span>)?
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowDelete(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded">
+              <button
+                onClick={() => setShowDelete(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+              >
                 Cancel
               </button>
-              <button onClick={submitDelete} disabled={submitting} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center">
+              <button
+                onClick={submitDelete}
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
+              >
                 {submitting ? <DotLoader /> : "Delete"}
               </button>
             </div>

@@ -43,7 +43,7 @@ export default function RecordEntries() {
     canAccessPage(role, PAGES.RECORD_ENTRIES) ||
     canAccessPage(role, PAGES.VIEW_RECORD_ENTRIES);
   const canCreate = canDo(role, ACTIONS.RECORD_ENTRY_CREATE);
-  const canEdit   = canDo(role, ACTIONS.RECORD_ENTRY_EDIT);
+  const canEdit = canDo(role, ACTIONS.RECORD_ENTRY_EDIT);
   const canDelete = canDo(role, ACTIONS.RECORD_ENTRY_DELETE);
 
   if (!canView) {
@@ -69,11 +69,16 @@ export default function RecordEntries() {
   const [sortKey, setSortKey] = useState("entryDate_desc");
   const sortParams = useMemo(() => {
     switch (sortKey) {
-      case "entryDate_asc": return { sortBy: "entryDate", order: "asc" };
-      case "entryDate_desc": return { sortBy: "entryDate", order: "desc" };
-      case "productSrNo_asc": return { sortBy: "productSrNo", order: "asc" };
-      case "productSrNo_desc": return { sortBy: "productSrNo", order: "desc" };
-      default: return { sortBy: "entryDate", order: "desc" };
+      case "entryDate_asc":
+        return { sortBy: "entryDate", order: "asc" };
+      case "entryDate_desc":
+        return { sortBy: "entryDate", order: "desc" };
+      case "productSrNo_asc":
+        return { sortBy: "productSrNo", order: "asc" };
+      case "productSrNo_desc":
+        return { sortBy: "productSrNo", order: "desc" };
+      default:
+        return { sortBy: "entryDate", order: "desc" };
     }
   }, [sortKey]);
 
@@ -200,7 +205,9 @@ export default function RecordEntries() {
         <div className="w-full md:w-[70vw] bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 overflow-visible min-h-[132px]">
           <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
             <div className="md:col-span-2">
-              <label className="block text-sm mb-1">Search (serial / text)</label>
+              <label className="block text-sm mb-1">
+                Search (serial / text)
+              </label>
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -247,7 +254,8 @@ export default function RecordEntries() {
                 onChange={(v) => {
                   if (v.includes("Newest")) setSortKey("entryDate_desc");
                   else if (v.includes("Oldest")) setSortKey("entryDate_asc");
-                  else if (v.includes("Serial ↑")) setSortKey("productSrNo_asc");
+                  else if (v.includes("Serial ↑"))
+                    setSortKey("productSrNo_asc");
                   else setSortKey("productSrNo_desc");
                 }}
                 disableSearch
@@ -285,45 +293,129 @@ export default function RecordEntries() {
       </div>
 
       {/* Wide table with grouped columns */}
-      <div className="w-full h-[500px] overflow-x-auto rounded-xl bg-white/5 backdrop-blur-md border border-white/10 custom-scrollbar">
+      <div className="w-full h-[500px] overflow-auto max-h-[450px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10 custom-scrollbar">
         <table className="min-w-[1900px] table-auto border-collapse">
           <thead>
             {/* Top header row */}
             <tr>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">#</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Serial</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Product</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Model</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Entry Date (IST)</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Packing Status</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Fault Reported</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Fault Analyzed</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Cosmetic Problem</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Action Taken</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">New Serial</th>
-              <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Assigned To</th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                #
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Serial
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Product
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Model
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Entry Date (IST)
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Packing Status
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Fault Reported
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Fault Analyzed
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Cosmetic Problem
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Action Taken
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                New Serial
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+              >
+                Assigned To
+              </th>
 
               {/* Grouped headers */}
-              <th colSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-center">
+              <th
+                colSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-center"
+              >
                 Parts Required
               </th>
-              <th colSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-center">
+              <th
+                colSpan={2}
+                className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-center"
+              >
                 Parts Replaced
               </th>
 
               {canEdit && (
-                <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Edit</th>
+                <th
+                  rowSpan={2}
+                  className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                >
+                  Edit
+                </th>
               )}
               {canDelete && (
-                <th rowSpan={2} className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left">Delete</th>
+                <th
+                  rowSpan={2}
+                  className="sticky top-0 bg-slate-300 text-black px-4 py-2 border border-[#162134] text-left"
+                >
+                  Delete
+                </th>
               )}
             </tr>
             {/* Sub header row for grouped columns */}
             <tr>
-              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">Industry</th>
-              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">Qty</th>
-              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">Industry</th>
-              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">Qty</th>
+              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">
+                Industry
+              </th>
+              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">
+                Qty
+              </th>
+              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">
+                Industry
+              </th>
+              <th className="sticky top-[2.56rem] bg-slate-200 text-black px-4 py-2 border border-[#162134] text-left">
+                Qty
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -355,16 +447,36 @@ export default function RecordEntries() {
                     <td className="border border-[#162134] px-4 py-2">
                       {(page - 1) * limit + idx + 1}
                     </td>
-                    <td className="border border-[#162134] px-4 py-2">{row.productSrNo}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.productName}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.modelNumber}</td>
-                    <td className="border border-[#162134] px-4 py-2">{toISTDate(row.entryDate)}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.packingStatus || "-"}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.faultReported || "—"}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.faultAnalyzed || "—"}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.cosmeticProblem || "—"}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.actionTaken || "—"}</td>
-                    <td className="border border-[#162134] px-4 py-2">{row.newSrNo || "—"}</td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.productSrNo}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.productName}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.modelNumber}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {toISTDate(row.entryDate)}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.packingStatus || "-"}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.faultReported || "—"}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.faultAnalyzed || "—"}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.cosmeticProblem || "—"}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.actionTaken || "—"}
+                    </td>
+                    <td className="border border-[#162134] px-4 py-2">
+                      {row.newSrNo || "—"}
+                    </td>
 
                     {/* Assigned To (stacked chips) */}
                     <td className="border border-[#162134] px-4 py-2">
@@ -442,7 +554,10 @@ export default function RecordEntries() {
                         <div className="space-y-1">
                           {repLines.map((r) => (
                             <div
-                              key={(r._id || `${r.industryName}-${r.partCode}`) + "-qty"}
+                              key={
+                                (r._id || `${r.industryName}-${r.partCode}`) +
+                                "-qty"
+                              }
                               className="px-2 py-1 rounded border border-white/20 bg-white/5 text-right"
                             >
                               {r.qty}
@@ -491,7 +606,9 @@ export default function RecordEntries() {
         >
           Prev
         </button>
-        <span className="text-white/80">Page {page} / {totalPages}</span>
+        <span className="text-white/80">
+          Page {page} / {totalPages}
+        </span>
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           className="px-3 py-1 rounded bg-gray-600 disabled:opacity-50"
@@ -522,13 +639,21 @@ export default function RecordEntries() {
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg w-full max-w-sm">
             <h3 className="text-xl font-semibold mb-3">Confirm Delete</h3>
             <p className="mb-4">
-              Delete entry <span className="font-semibold">{deleteRow.productSrNo}</span>?
+              Delete entry{" "}
+              <span className="font-semibold">{deleteRow.productSrNo}</span>?
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteRow(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded">
+              <button
+                onClick={() => setDeleteRow(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+              >
                 Cancel
               </button>
-              <button onClick={submitDelete} disabled={deleting} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center">
+              <button
+                onClick={submitDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
+              >
                 {deleting ? <DotLoader /> : "Delete"}
               </button>
             </div>
@@ -545,10 +670,22 @@ export default function RecordEntries() {
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-white/90">
-              <div><span className="text-white/70">Serial:</span> {createdOverlay.productSrNo || "-"}</div>
-              <div><span className="text-white/70">Product:</span> {createdOverlay.productName || "-"}</div>
-              <div><span className="text-white/70">Model:</span> {createdOverlay.modelNumber || "-"}</div>
-              <div><span className="text-white/70">Packing Status:</span> {createdOverlay.packingStatus || "-"}</div>
+              <div>
+                <span className="text-white/70">Serial:</span>{" "}
+                {createdOverlay.productSrNo || "-"}
+              </div>
+              <div>
+                <span className="text-white/70">Product:</span>{" "}
+                {createdOverlay.productName || "-"}
+              </div>
+              <div>
+                <span className="text-white/70">Model:</span>{" "}
+                {createdOverlay.modelNumber || "-"}
+              </div>
+              <div>
+                <span className="text-white/70">Packing Status:</span>{" "}
+                {createdOverlay.packingStatus || "-"}
+              </div>
             </div>
 
             <div className="mt-5 flex justify-end">

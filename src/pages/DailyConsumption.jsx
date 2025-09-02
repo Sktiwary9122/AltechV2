@@ -823,7 +823,7 @@ export default function DailyConsumption() {
 
       {/* Tables */}
       {mode === "single" && (
-        <div className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
+        <div className="w-full overflow-auto custom-scrollbar max-h-[450px]  rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
           <table className="w-full min-w-[1200px] table-auto border-collapse">
             <TableHeadDay />
             <tbody>

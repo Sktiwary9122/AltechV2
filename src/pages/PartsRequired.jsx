@@ -6,11 +6,11 @@ import DotLoader from "../components/DotLoader";
 import Dropdown from "../components/Dropdown";
 import {
   // NEW: availability fetch (all parts with availability)
-  getPartsAvailabilityByIndustry,            // GET /parts-required/availability (all) -> { success, data:{ items, total } }
+  getPartsAvailabilityByIndustry, // GET /parts-required/availability (all) -> { success, data:{ items, total } }
   listPartsRequiredHeaderSubheader, // GET /parts-required/unique -> NEW nested shape
-  createPartRequired,               // POST /parts-required
-  updatePartRequired,               // PATCH /parts-required/:id
-  deletePartRequired,               // DELETE /parts-required/:id
+  createPartRequired, // POST /parts-required
+  updatePartRequired, // PATCH /parts-required/:id
+  deletePartRequired, // DELETE /parts-required/:id
 } from "../api/api";
 
 // --- helpers ---
@@ -29,7 +29,8 @@ function normalizeCatalog(nestedRes) {
     if (!entry || typeof entry !== "object") return;
     Object.entries(entry).forEach(([headerName, detail]) => {
       if (!headerName || !detail || typeof detail !== "object") return;
-      const type = (detail.type || "").toLowerCase() === "tree" ? "tree" : "flat";
+      const type =
+        (detail.type || "").toLowerCase() === "tree" ? "tree" : "flat";
 
       if (type === "flat") {
         const industryArr = Array.isArray(detail.industryNames)
@@ -44,7 +45,9 @@ function normalizeCatalog(nestedRes) {
         });
         map[headerName] = { type, industries };
       } else {
-        const subsArr = Array.isArray(detail.subHeaders) ? detail.subHeaders : [];
+        const subsArr = Array.isArray(detail.subHeaders)
+          ? detail.subHeaders
+          : [];
         const subHeaders = {};
         subsArr.forEach((subObj) => {
           if (!subObj || typeof subObj !== "object") return;
@@ -71,8 +74,8 @@ function normalizeCatalog(nestedRes) {
 }
 
 export default function PartsRequired() {
-  const [items, setItems] = useState([]);      // table rows (from availability)
-  const [catalog, setCatalog] = useState({});  // normalized from /parts-required/unique
+  const [items, setItems] = useState([]); // table rows (from availability)
+  const [catalog, setCatalog] = useState({}); // normalized from /parts-required/unique
 
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -98,7 +101,7 @@ export default function PartsRequired() {
   // role gates
   const role = (localStorage.getItem("role") || "").toLowerCase();
   const canCreate = role === "admin";
-  const canEdit   = role === "admin";
+  const canEdit = role === "admin";
   const canDelete = role === "admin";
 
   /* ========================= Derived options ========================= */
@@ -148,7 +151,14 @@ export default function PartsRequired() {
     );
     if (!sh) return [];
     return Object.keys(meta.subHeaders?.[sh]?.industries || {});
-  }, [isExistingHeader, headerOptions, catalog, form.header, form.subHeader, subHeaderOptions]);
+  }, [
+    isExistingHeader,
+    headerOptions,
+    catalog,
+    form.header,
+    form.subHeader,
+    subHeaderOptions,
+  ]);
 
   const partCodeOptions = useMemo(() => {
     if (!isExistingHeader) return [];
@@ -166,7 +176,15 @@ export default function PartsRequired() {
     );
     if (!sh) return [];
     return meta.subHeaders?.[sh]?.industries?.[form.industryName] || [];
-  }, [isExistingHeader, headerOptions, catalog, form.header, form.subHeader, form.industryName, subHeaderOptions]);
+  }, [
+    isExistingHeader,
+    headerOptions,
+    catalog,
+    form.header,
+    form.subHeader,
+    form.industryName,
+    subHeaderOptions,
+  ]);
 
   /* ========================= Fetchers ========================= */
   // NEW: load from availability endpoint instead of listPartsRequired
@@ -185,7 +203,9 @@ export default function PartsRequired() {
       setItems(list);
     } catch (err) {
       console.error(err);
-      toast.error(err?.response?.data?.message || "Failed to load availability");
+      toast.error(
+        err?.response?.data?.message || "Failed to load availability"
+      );
     } finally {
       setLoading(false);
     }
@@ -250,7 +270,11 @@ export default function PartsRequired() {
   const onChangeType = (val) => {
     if (isExistingHeader) return;
     const t = val === "tree" ? "tree" : "flat";
-    setForm((f) => ({ ...f, type: t, subHeader: t === "tree" ? f.subHeader : "" }));
+    setForm((f) => ({
+      ...f,
+      type: t,
+      subHeader: t === "tree" ? f.subHeader : "",
+    }));
   };
 
   const onChangeSubHeader = (val) =>
@@ -314,7 +338,7 @@ export default function PartsRequired() {
       setShowCreate(false);
       resetForm();
       await fetchAvailability(); // refresh availability table
-      await fetchCatalog();      // refresh catalog for cascades
+      await fetchCatalog(); // refresh catalog for cascades
     } catch (err) {
       console.error(err);
       const msg =
@@ -465,7 +489,7 @@ export default function PartsRequired() {
       </div>
 
       {/* Table */}
-      <div className="w-full overflow-x-auto custom-scrollbar rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
+      <div className="w-full overflow-auto custom-scrollbar max-h-[530x]  rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
         <table className="min-w-full table-auto border-collapse">
           <thead>
             <tr>
@@ -502,11 +526,21 @@ export default function PartsRequired() {
                   key={row._id}
                   className="odd:bg-white/5 even:bg-transparent hover:bg-white/10 transition-colors"
                 >
-                  <td className="border border-[#162134] px-4 py-2">{idx + 1}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.header || "-"}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.subHeader || "-"}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.industryName || "-"}</td>
-                  <td className="border border-[#162134] px-4 py-2">{row.partCode || "-"}</td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {idx + 1}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.header || "-"}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.subHeader || "-"}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.industryName || "-"}
+                  </td>
+                  <td className="border border-[#162134] px-4 py-2">
+                    {row.partCode || "-"}
+                  </td>
                   <td className="border border-[#162134] px-4 py-2">
                     {typeof row.msl === "number" ? row.msl : "-"}
                   </td>
@@ -555,7 +589,9 @@ export default function PartsRequired() {
         <div className="fixed inset-0 z-[120] overflow-y-auto">
           <div className="min-h-full flex items-center justify-center p-4">
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-              <h3 className="text-xl font-semibold text-center mb-4">Create Part</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Create Part
+              </h3>
               <form onSubmit={handleCreate} className="space-y-4">
                 {/* Header */}
                 <Dropdown
@@ -566,18 +602,26 @@ export default function PartsRequired() {
                 />
 
                 {/* Type (locked if header exists) */}
-                <div className={isExistingHeader ? "opacity-60 pointer-events-none" : ""}>
+                <div
+                  className={
+                    isExistingHeader ? "opacity-60 pointer-events-none" : ""
+                  }
+                >
                   <Dropdown
                     label={`Type *${isExistingHeader ? " (locked)" : ""}`}
                     options={["flat", "tree"]}
-                    value={isExistingHeader ? lockedType || form.type : form.type}
+                    value={
+                      isExistingHeader ? lockedType || form.type : form.type
+                    }
                     onChange={onChangeType}
                     disableSearch
                   />
                 </div>
 
                 {/* Subheader when type=tree */}
-                {(isExistingHeader ? lockedType === "tree" : form.type === "tree") && (
+                {(isExistingHeader
+                  ? lockedType === "tree"
+                  : form.type === "tree") && (
                   <Dropdown
                     label="Subheader *"
                     options={isExistingHeader ? subHeaderOptions : []}
@@ -619,7 +663,9 @@ export default function PartsRequired() {
                   <label className="block mb-1">Note (optional)</label>
                   <textarea
                     value={form.note}
-                    onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, note: e.target.value }))
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -651,23 +697,53 @@ export default function PartsRequired() {
         <div className="fixed inset-0 z-[120] overflow-y-auto">
           <div className="min-h-full flex items-center justify-center p-4">
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-              <h3 className="text-xl font-semibold text-center mb-4">Edit Part</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Edit Part
+              </h3>
               <form onSubmit={handleEdit} className="space-y-4">
-                <Dropdown label="Header *" options={headerOptions} value={form.header} onChange={onChangeHeader} />
-                <div className={isExistingHeader ? "opacity-60 pointer-events-none" : ""}>
+                <Dropdown
+                  label="Header *"
+                  options={headerOptions}
+                  value={form.header}
+                  onChange={onChangeHeader}
+                />
+                <div
+                  className={
+                    isExistingHeader ? "opacity-60 pointer-events-none" : ""
+                  }
+                >
                   <Dropdown
                     label={`Type *${isExistingHeader ? " (locked)" : ""}`}
                     options={["flat", "tree"]}
-                    value={isExistingHeader ? lockedType || form.type : form.type}
+                    value={
+                      isExistingHeader ? lockedType || form.type : form.type
+                    }
                     onChange={onChangeType}
                     disableSearch
                   />
                 </div>
-                {(isExistingHeader ? lockedType === "tree" : form.type === "tree") && (
-                  <Dropdown label="Subheader *" options={isExistingHeader ? subHeaderOptions : []} value={form.subHeader} onChange={onChangeSubHeader} />
+                {(isExistingHeader
+                  ? lockedType === "tree"
+                  : form.type === "tree") && (
+                  <Dropdown
+                    label="Subheader *"
+                    options={isExistingHeader ? subHeaderOptions : []}
+                    value={form.subHeader}
+                    onChange={onChangeSubHeader}
+                  />
                 )}
-                <Dropdown label="Industry Name *" options={industryOptions} value={form.industryName} onChange={onChangeIndustry} />
-                <Dropdown label="Part Code *" options={partCodeOptions} value={form.partCode} onChange={onChangePartCode} />
+                <Dropdown
+                  label="Industry Name *"
+                  options={industryOptions}
+                  value={form.industryName}
+                  onChange={onChangeIndustry}
+                />
+                <Dropdown
+                  label="Part Code *"
+                  options={partCodeOptions}
+                  value={form.partCode}
+                  onChange={onChangePartCode}
+                />
 
                 <div>
                   <label className="block mb-1">MSL *</label>
@@ -684,16 +760,26 @@ export default function PartsRequired() {
                   <label className="block mb-1">Note (optional)</label>
                   <textarea
                     value={form.note}
-                    onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, note: e.target.value }))
+                    }
                     className={inputCls}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <button type="button" onClick={() => setShowEdit(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded">
+                  <button
+                    type="button"
+                    onClick={() => setShowEdit(null)}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+                  >
                     Cancel
                   </button>
-                  <button type="submit" disabled={submitting} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded flex items-center justify-center">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded flex items-center justify-center"
+                  >
                     {submitting ? <DotLoader /> : "Update"}
                   </button>
                 </div>
@@ -718,10 +804,17 @@ export default function PartsRequired() {
                 ?
               </p>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowDelete(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded">
+                <button
+                  onClick={() => setShowDelete(null)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded"
+                >
                   Cancel
                 </button>
-                <button onClick={handleDelete} disabled={submitting} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center">
+                <button
+                  onClick={handleDelete}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
+                >
                   {submitting ? <DotLoader /> : "Delete"}
                 </button>
               </div>
