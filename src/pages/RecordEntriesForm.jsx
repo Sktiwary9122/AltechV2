@@ -84,12 +84,12 @@ export default function RecordEntryForm() {
   const [cosmeticProblem, setCosmeticProblem] = useState("");
   const [actionTaken, setActionTaken] = useState("");
   const [packingStatus, setPackingStatus] = useState("Pending");
-  const [packingDate, setPackingDate] = useState("");
+  const [packingDate, setPackingDate] = useState(istDateYYYYMMDD());
   const [newSrNo, setNewSrNo] = useState("");
   const [remarks, setRemarks] = useState("");
 
   // NEW: end-users + assigned
-  const [endUsers, setEndUsers] = useState([]);           // [{_id, userId, ...}]
+  const [endUsers, setEndUsers] = useState([]); // [{_id, userId, ...}]
   const endUserOptions = useMemo(
     () => endUsers.map((u) => u.userId),
     [endUsers]
@@ -267,7 +267,8 @@ export default function RecordEntryForm() {
     );
 
   const validate = () => {
-    /* validation logic */ return [];
+    if (newSrNo.trim().length !== 16)
+      return ["New SR No. should be 16 characters."];
   };
 
   // Helper: map assignedUserIds (comma-separated) -> [{userRef, userId}]
@@ -289,11 +290,13 @@ export default function RecordEntryForm() {
   /* ---- Submit ---- */
   const onSubmit = async (e) => {
     e.preventDefault();
-    const errs = validate();
-    if (errs.length) {
-      toast.warn(errs[0]);
-      return;
-    }
+    // const errs = validate();
+    // if (errs.length) {
+    //   toast.warn(errs[0]);
+    //   return;
+    // }
+
+    if(newSrNo.trim().length !== 16) return toast.warn("New SR No. should be 16 characters.");
 
     if (mode === "create") {
       const payload = {
@@ -312,10 +315,10 @@ export default function RecordEntryForm() {
         entryDate: istNowISO(),
         requirementLines: reqLines
           .filter((r) => r.industryName && r.qtyRequired)
-        .map((r) => ({
-          industryName: r.industryName,
-          qtyRequired: Number(r.qtyRequired),
-        })),
+          .map((r) => ({
+            industryName: r.industryName,
+            qtyRequired: Number(r.qtyRequired),
+          })),
         replacementRequests: repLines
           .filter((r) => r.industryName && r.quantity)
           .map((r) => ({
@@ -367,7 +370,7 @@ export default function RecordEntryForm() {
             : null;
         if (newSrNo !== (original.newSrNo || "")) coreChanges.newSrNo = newSrNo;
         if (remarks !== (original.remarks || "")) coreChanges.remarks = remarks;
-                // 4. NEW: assignedTo changes
+        // 4. NEW: assignedTo changes
         const newAssignedIds = (assignedUserIds || "")
           .split(",")
           .map((s) => s.trim())
@@ -379,7 +382,8 @@ export default function RecordEntryForm() {
           .sort();
 
         const sameAssigned =
-          JSON.stringify(newAssignedIds) === JSON.stringify(originalAssignedIds);
+          JSON.stringify(newAssignedIds) ===
+          JSON.stringify(originalAssignedIds);
 
         if (!sameAssigned) {
           const mapped = mapAssignedTo();
@@ -478,6 +482,7 @@ export default function RecordEntryForm() {
               value={productName}
               onChange={setProductName}
               disabled={mode === "edit"}
+              disableSearch
             />
             <Dropdown
               label="Model Number"
@@ -485,6 +490,7 @@ export default function RecordEntryForm() {
               value={modelNumber}
               onChange={setModelNumber}
               disabled={mode === "edit"}
+              disableAdd
             />
           </div>
         </div>
@@ -501,7 +507,6 @@ export default function RecordEntryForm() {
               options={options["Fault Analysed"] || []}
               value={faultAnalyzed}
               onChange={setFaultAnalyzed}
-              disableAdd
             />
             <Dropdown
               label="Cosmetic Problem"
@@ -510,7 +515,7 @@ export default function RecordEntryForm() {
               onChange={setCosmeticProblem}
               disableAdd
             />
-            <div>
+            {/* <div>
               <label className="block text-white mb-1">Action Taken</label>
               <textarea
                 className="w-full p-2 border rounded bg-slate-600 text-white"
@@ -518,7 +523,13 @@ export default function RecordEntryForm() {
                 value={actionTaken}
                 onChange={(e) => setActionTaken(e.target.value)}
               />
-            </div>
+            </div> */}
+            <Dropdown
+              label="Action Taken"
+              options={options["Action Taken"]}
+              value={actionTaken}
+              onChange={setActionTaken}
+            />
           </div>
         </div>
 
@@ -649,7 +660,7 @@ export default function RecordEntryForm() {
               options={["Pending", "Processing", "Completed"]}
               value={packingStatus}
               onChange={setPackingStatus}
-              disableAdd
+              disableSearch
             />
             <div className="md:col-span-2">
               <label className="block text-white mb-1">Packing Date</label>
@@ -661,7 +672,7 @@ export default function RecordEntryForm() {
               />
             </div>
           </div>
-          <div className="mt-3">
+          {/* <div className="mt-3">
             <label className="block text-white mb-1">Remarks</label>
             <textarea
               className="w-full p-2 border rounded bg-slate-600 text-white"
@@ -669,7 +680,13 @@ export default function RecordEntryForm() {
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
             />
-          </div>
+          </div> */}
+          <Dropdown
+            label="Remarks"
+            options={options["Remarks"]}
+            value={remarks}
+            onChange={setRemarks}
+          />
 
           {/* NEW: Assign To (end-users) */}
           <div className="mt-3">

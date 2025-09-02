@@ -117,7 +117,7 @@ export default function RecordEntriesFormDEO() {
 
   // ----- Step 3: packing + remarks + assigned
   const [packingStatus, setPackingStatus] = useState("Pending");
-  const [packingDate, setPackingDate] = useState("");
+  const [packingDate, setPackingDate] = useState(istDateYYYYMMDD());
   const [newSrNo, setNewSrNo] = useState("");
   const [remarks, setRemarks] = useState("");
   const [assignedUserIds, setAssignedUserIds] = useState("");
@@ -231,7 +231,7 @@ export default function RecordEntriesFormDEO() {
             setPackingDate(
               rec.packingDate
                 ? new Date(rec.packingDate).toISOString().slice(0, 10)
-                : ""
+                : nowInIST().toISOString().slice(0, 10)
             );
             setNewSrNo(rec.newSrNo || "");
             setRemarks(rec.remarks || "");
@@ -445,7 +445,7 @@ export default function RecordEntriesFormDEO() {
     } finally {
       setSaving(false);
     }
-  };  
+  };
 
   /* ---------- Step 3 save (packing + meta) ---------- */
   const onSaveStep3 = async () => {
@@ -456,6 +456,8 @@ export default function RecordEntriesFormDEO() {
         "Cannot open Packing until every industry's replacements match its requirement."
       );
     }
+    if (newSrNo && newSrNo.trim().length !== 16)
+      return toast.warn("New SR No. should be 16 characters.");
 
     const body = {};
     if (actionTaken.trim()) body.actionTaken = actionTaken.trim();
@@ -500,6 +502,7 @@ export default function RecordEntriesFormDEO() {
       if (!updated?._id) throw new Error("Update failed");
       setRecord(updated);
       toast.success(wantsPacking ? "Packed / updated." : "Updated.");
+      navigate(-1);
     } catch (e) {
       console.error(e);
       toast.error(e?.response?.data?.message || "Update failed");
@@ -598,6 +601,7 @@ export default function RecordEntriesFormDEO() {
                   value={productName}
                   onChange={setProductName}
                   disabled={!!recordId}
+                  disableSearch
                 />
                 <Dropdown
                   label="Model"
@@ -605,6 +609,7 @@ export default function RecordEntriesFormDEO() {
                   value={modelNumber}
                   onChange={setModelNumber}
                   disabled={!!recordId}
+                  disableAdd
                 />
               </div>
 
@@ -636,6 +641,7 @@ export default function RecordEntriesFormDEO() {
                   value={faultAnalyzed}
                   onChange={setFaultAnalyzed}
                   disabled={!!recordId}
+                  multiSelect
                 />
                 <Dropdown
                   label="Cosmetic Problem"
@@ -643,6 +649,7 @@ export default function RecordEntriesFormDEO() {
                   value={cosmeticProblem}
                   onChange={setCosmeticProblem}
                   disabled={!!recordId}
+                  disableAdd
                 />
               </div>
             </div>
@@ -806,7 +813,7 @@ export default function RecordEntriesFormDEO() {
                 </div>
               )}
             </div>
-
+            {/* 
             <div className={cardCls}>
               <label className="block text-white mb-1">Action Taken</label>
               <textarea
@@ -816,7 +823,14 @@ export default function RecordEntriesFormDEO() {
                 onChange={(e) => setActionTaken(e.target.value)}
                 disabled={isPacked}
               />
-            </div>
+            </div> */}
+            <Dropdown
+              label="Action Taken"
+              options={options["Action Taken"]}
+              value={actionTaken}
+              onChange={setActionTaken}
+              disabled={isPacked}
+            />
 
             <div className="flex justify-between gap-2">
               <button
@@ -867,6 +881,7 @@ export default function RecordEntriesFormDEO() {
                   value={packingStatus}
                   onChange={setPackingStatus}
                   disabled={isPacked}
+                  disableSearch
                 />
                 <div className="md:col-span-2">
                   <label className="block text-white mb-1">Packing Date</label>
@@ -907,7 +922,7 @@ export default function RecordEntriesFormDEO() {
                 </div>
               </div>
 
-              <div className="mt-3">
+              {/* <div className="mt-3">
                 <label className="block text-white mb-1">Remarks</label>
                 <textarea
                   className="w-full p-2 border rounded bg-slate-600 text-white"
@@ -916,9 +931,16 @@ export default function RecordEntriesFormDEO() {
                   onChange={(e) => setRemarks(e.target.value)}
                   disabled={isPacked}
                 />
-              </div>
+              </div> */}
+              <Dropdown
+                label="Remarks"
+                options={options["Remarks"]}
+                value={remarks}
+                onChange={setRemarks}
+                disabled={isPacked}
+              />
 
-              <div className="mt-3">
+              {/* <div className="mt-3">
                 <label className="block text-white mb-1">
                   Action Taken (optional)
                 </label>
@@ -929,7 +951,14 @@ export default function RecordEntriesFormDEO() {
                   onChange={(e) => setActionTaken(e.target.value)}
                   disabled={isPacked}
                 />
-              </div>
+              </div> */}
+              <Dropdown
+                label="Action Taken (optional)"
+                options={options["Action Taken"]}
+                value={actionTaken}
+                onChange={setActionTaken}
+                disabled={isPacked}
+              />
 
               <div className="mt-3">
                 <Dropdown
@@ -939,6 +968,7 @@ export default function RecordEntriesFormDEO() {
                   onChange={setAssignedUserIds}
                   multiSelect
                   disabled={isPacked}
+                  disableSearch
                 />
                 <div className="text-xs text-white/60 mt-1">
                   Multiple selections allowed. Applies on Save.

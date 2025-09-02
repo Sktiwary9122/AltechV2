@@ -239,6 +239,8 @@ export default function RecordEntries() {
                 options={["Pending", "Processing", "Completed"]}
                 value={packingStatus}
                 onChange={setPackingStatus}
+                disableSearch
+                
               />
             </div>
             <div className="md:col-span-2">

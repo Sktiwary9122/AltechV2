@@ -63,16 +63,28 @@ export const options = {
   ],
   "Fault Analysed": [
     "NO",
-    "NOT WORKING",
+    "NOT WORKING/NOT ON",
     "PCB MISSING",
-    "NOT ON",
-    "FAN NOT WORK",
-    "PCB NOT WORK",
-    "DISPLAY NOT WORK PROPER",
-    "HI LOW CUT PROB.",
-    "PCB & DISPLAY NOT WORK",
     "PCB FAULTY",
+    "REPLAY NOT WORKING",
+    "AC FUSE BURNT",
+    "FAN NOT WORKING",
+    "DISPLAY PCB NOT WORKING",
+    "HI- LOW CUT PROBLEM",
+    "3 PIN SOCKET BROKEN AND RUSTED",
+    "MAIN WIRE LENGTH SHORT AND CUTS,SCRATCH",
     "TRANSFORMER BRUNT",
+  ],
+  "Action Taken":[
+    "HOLD FOR SPARE PARTS",
+    "PACKING IN PROCESS",
+    "FINAL PACKED",
+    "TRANSFORMER BURNT AND SENT FOR SCRAP"
+  ],
+  "Remarks":[
+    "NO TECHNICAL MISTAKE FOUND,BODY CHANGED",
+    "PCB COMPLAINT/PCB CHANGE AND BODY CHANGE",
+    "TRANSFORMER BURNT AND SENT FOR SCRAP"
   ],
   "Cosmetic Problem": ["YES", "BODY DAMAGE"],
   "Output Socket": [
