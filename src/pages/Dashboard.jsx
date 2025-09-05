@@ -130,6 +130,7 @@ export default function Dashboard() {
       { key: "Packing Date", label: "Packing Date" },
       { key: "New Sr No.", label: "New Sr No." },
       { key: "Remarks", label: "Remarks" },
+      { key: "Total", label: "Total" },
     ];
 
     const prStart = left.length;
@@ -178,6 +179,7 @@ export default function Dashboard() {
         "Packing Date": rec["Packing Date"] ?? "—",
         "New Sr No.": rec["New Sr No."] ?? "—",
         Remarks: rec["Remarks"] ?? "—",
+        Total: typeof rec.total === "number" ? rec.total : Number(rec.total || 0),
       };
 
       const merged = { ...base };
@@ -255,6 +257,7 @@ export default function Dashboard() {
       const repRes = await getRmReport(apiParams);
       const records =
         repRes?.data?.data?.records || repRes?.data?.records || [];
+      console.log("records",records);
       setRows(mapRecordsToRows(records, cols));
     } catch (e) {
       console.error(e);
@@ -465,7 +468,7 @@ export default function Dashboard() {
 
       {/* Table */}
       <div className="w-full overflow-auto custom-scrollbar max-h-[450px] rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
-        <table className="w-full min-w-[1200px] table-auto border-collapse">
+        <table className="w-full min-w-[1200px] table-auto border-separate border-spacing-0">
           {columns.length > 0 && (
             <thead className="text-black">
               {(() => {
@@ -500,7 +503,7 @@ export default function Dashboard() {
                       {finalLeftCols.map((c) => (
                         <th
                           key={c.key}
-                          className="sticky top-0 px-4 py-2 border border-[#162134] text-left align-middle"
+                          className="sticky top-0 z-40 bg-clip-padding px-4 py-2 border border-[#162134] text-left align-middle"
                           style={{ backgroundColor: staticColor }}
                           rowSpan={3}
                         >
@@ -539,7 +542,7 @@ export default function Dashboard() {
                           return (
                             <th
                               key={`pr-sb-${sb.title}`}
-                              className="sticky top-[40px] px-4 py-2 border border-[#162134] text-center"
+                              className="sticky top-[40px] z-30 bg-clip-padding px-4 py-2 border border-[#162134] text-center"
                               style={{ backgroundColor: requiredColor }}
                               colSpan={sb.count}
                             >
@@ -554,7 +557,7 @@ export default function Dashboard() {
                           return flatCols.map((c) => (
                             <th
                               key={c.key}
-                              className="sticky top-[40px] px-4 py-2 border border-[#162134] text-left align-middle"
+                              className="sticky top-[40px] z-30 bg-clip-padding px-4 py-2 border border-[#162134] text-left align-middle"
                               style={{ backgroundColor: requiredColor }}
                               rowSpan={2}
                             >
@@ -601,7 +604,7 @@ export default function Dashboard() {
                         .map((c) => (
                           <th
                             key={c.key}
-                            className="sticky top-[80px] px-4 py-2 border border-[#162134] text-left"
+                            className="sticky top-[80px] z-20 bg-clip-padding px-4 py-2 border border-[#162134] text-left"
                             style={{
                               backgroundColor: c.key.startsWith("PR|")
                                 ? requiredColor
