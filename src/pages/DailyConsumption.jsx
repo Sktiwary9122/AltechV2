@@ -82,10 +82,10 @@ export default function DailyConsumption() {
       "Industry ↓",
       "Part Code ↑",
       "Part Code ↓",
-      "Header ↑",
-      "Header ↓",
-      "Sub Header ↑",
-      "Sub Header ↓",
+      // "Header ↑",
+      // "Header ↓",
+      // "Sub Header ↑",
+      // "Sub Header ↓",
     ],
     range: [
       "Newest day",
@@ -106,10 +106,10 @@ export default function DailyConsumption() {
       "Industry ↓",
       "Part Code ↑",
       "Part Code ↓",
-      "Header ↑",
-      "Header ↓",
-      "Sub Header ↑",
-      "Sub Header ↓",
+      // "Header ↑",
+      // "Header ↓",
+      // "Sub Header ↑",
+      // "Sub Header ↓",
     ],
     cumulative: [
       "Closing ↓",
@@ -128,10 +128,10 @@ export default function DailyConsumption() {
       "Industry ↓",
       "Part Code ↑",
       "Part Code ↓",
-      "Header ↑",
-      "Header ↓",
-      "Sub Header ↑",
-      "Sub Header ↓",
+      // "Header ↑",
+      // "Header ↓",
+      // "Sub Header ↑",
+      // "Sub Header ↓",
     ],
   };
 
@@ -171,14 +171,14 @@ export default function DailyConsumption() {
           return common("partCode", "asc");
         case "part_desc":
           return common("partCode", "desc");
-        case "header_asc":
-          return common("header", "asc");
-        case "header_desc":
-          return common("header", "desc");
-        case "sub_asc":
-          return common("subHeader", "asc");
-        case "sub_desc":
-          return common("subHeader", "desc");
+        // case "header_asc":
+        //   return common("header", "asc");
+        // case "header_desc":
+        //   return common("header", "desc");
+        // case "sub_asc":
+        //   return common("subHeader", "asc");
+        // case "sub_desc":
+        //   return common("subHeader", "desc");
         default:
           return common("closing", "desc");
       }
@@ -221,14 +221,14 @@ export default function DailyConsumption() {
         return common("partCode", "asc");
       case "part_desc":
         return common("partCode", "desc");
-      case "header_asc":
-        return common("header", "asc");
-      case "header_desc":
-        return common("header", "desc");
-      case "sub_asc":
-        return common("subHeader", "asc");
-      case "sub_desc":
-        return common("subHeader", "desc");
+      // case "header_asc":
+      //   return common("header", "asc");
+      // case "header_desc":
+      //   return common("header", "desc");
+      // case "sub_asc":
+      //   return common("subHeader", "asc");
+      // case "sub_desc":
+      //   return common("subHeader", "desc");
       default:
         return { sortBy: "dateKey", order: "desc" };
     }
@@ -254,10 +254,10 @@ export default function DailyConsumption() {
       industry_desc: "Industry ↓",
       part_asc: "Part Code ↑",
       part_desc: "Part Code ↓",
-      header_asc: "Header ↑",
-      header_desc: "Header ↓",
-      sub_asc: "Sub Header ↑",
-      sub_desc: "Sub Header ↓",
+      // header_asc: "Header ↑",
+      // header_desc: "Header ↓",
+      // sub_asc: "Sub Header ↑",
+      // sub_desc: "Sub Header ↓",
     };
     return map[sortKey];
   }, [sortKey]);
@@ -294,8 +294,8 @@ export default function DailyConsumption() {
       }
 
       const params = {
-        header: header || undefined,
-        subHeader: subHeader || undefined,
+        // header: header || undefined,
+        // subHeader: subHeader || undefined,
         industryName: industryName || undefined,
         partCode: partCode || undefined,
         sortBy: sortParams.sortBy,
@@ -373,8 +373,8 @@ export default function DailyConsumption() {
 
   const buildExportParams = () => {
     const base = {
-      header: header || undefined,
-      subHeader: subHeader || undefined,
+      // header: header || undefined,
+      // subHeader: subHeader || undefined,
       industryName: industryName || undefined,
       partCode: partCode || undefined,
       sortBy: sortParams.sortBy,
@@ -442,8 +442,8 @@ export default function DailyConsumption() {
         {[
           "#",
           "Date",
-          "Header",
-          "Sub Header",
+          "Item Type",
+          "Item Name",
           "Industry",
           "Part Code",
           "MSL",
@@ -469,8 +469,8 @@ export default function DailyConsumption() {
       <tr>
         {[
           "#",
-          "Header",
-          "Sub Header",
+          "Item Type",
+          "Item Name",
           "Industry",
           "Part Code",
           "Opening",
@@ -627,10 +627,10 @@ export default function DailyConsumption() {
       "Industry ↓": "industry_desc",
       "Part Code ↑": "part_asc",
       "Part Code ↓": "part_desc",
-      "Header ↑": "header_asc",
-      "Header ↓": "header_desc",
-      "Sub Header ↑": "sub_asc",
-      "Sub Header ↓": "sub_desc",
+      // "Header ↑": "header_asc",
+      // "Header ↓": "header_desc",
+      // "Sub Header ↑": "sub_asc",
+      // "Sub Header ↓": "sub_desc",
     };
     setSortKey(keyMap[label]);
   };
@@ -733,7 +733,7 @@ export default function DailyConsumption() {
             )}
 
             <div className="md:col-span-2">
-              <label className="block text-sm mb-1">Header</label>
+              <label className="block text-sm mb-1">Item Type</label>
               <input
                 className={inputCls}
                 value={header}
@@ -742,7 +742,7 @@ export default function DailyConsumption() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm mb-1">Sub Header</label>
+              <label className="block text-sm mb-1">Item Name</label>
               <input
                 className={inputCls}
                 value={subHeader}

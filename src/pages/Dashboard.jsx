@@ -407,7 +407,7 @@ export default function Dashboard() {
               />
             </div>
             <div className="md:col-span-3">
-              <label className="block text-sm mb-1">Model Number</label>
+              <label className="block text-sm mb-1">Model</label>
               <input
                 className={inputCls}
                 value={modelNumber}

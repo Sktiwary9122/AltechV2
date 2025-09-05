@@ -467,7 +467,7 @@ export default function PartsRequired() {
 
       {/* Header row */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h1 className="text-2xl font-bold">Parts Required</h1>
+        <h1 className="text-2xl font-bold">Parts Creation</h1>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
           <input
@@ -495,11 +495,11 @@ export default function PartsRequired() {
             <tr>
               {[
                 "#",
-                "Header",
-                "Subheader",
+                "Item Type",
+                "Item Name",
                 "Industry Name",
                 "Part Code",
-                "MSL",
+                "MSL(Minimum quantity)",
                 "In Stock",
                 "Edit",
                 "Delete",
@@ -595,7 +595,7 @@ export default function PartsRequired() {
               <form onSubmit={handleCreate} className="space-y-4">
                 {/* Header */}
                 <Dropdown
-                  label="Header *"
+                  label="Item Type *"
                   options={headerOptions}
                   value={form.header}
                   onChange={onChangeHeader}
@@ -623,7 +623,7 @@ export default function PartsRequired() {
                   ? lockedType === "tree"
                   : form.type === "tree") && (
                   <Dropdown
-                    label="Subheader *"
+                    label="Item Name *"
                     options={isExistingHeader ? subHeaderOptions : []}
                     value={form.subHeader}
                     onChange={onChangeSubHeader}
@@ -648,7 +648,7 @@ export default function PartsRequired() {
 
                 {/* MSL (required) */}
                 <div>
-                  <label className="block mb-1">MSL *</label>
+                  <label className="block mb-1">MSL(Minimum Quantity) *</label>
                   <input
                     type="number"
                     min="0"
@@ -702,7 +702,7 @@ export default function PartsRequired() {
               </h3>
               <form onSubmit={handleEdit} className="space-y-4">
                 <Dropdown
-                  label="Header *"
+                  label="Item Type *"
                   options={headerOptions}
                   value={form.header}
                   onChange={onChangeHeader}
@@ -726,7 +726,7 @@ export default function PartsRequired() {
                   ? lockedType === "tree"
                   : form.type === "tree") && (
                   <Dropdown
-                    label="Subheader *"
+                    label="Item Name *"
                     options={isExistingHeader ? subHeaderOptions : []}
                     value={form.subHeader}
                     onChange={onChangeSubHeader}
@@ -746,7 +746,7 @@ export default function PartsRequired() {
                 />
 
                 <div>
-                  <label className="block mb-1">MSL *</label>
+                  <label className="block mb-1">MSL(Minimum Quantity) *</label>
                   <input
                     type="number"
                     min="0"

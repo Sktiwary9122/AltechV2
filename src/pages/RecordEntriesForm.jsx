@@ -296,7 +296,8 @@ export default function RecordEntryForm() {
     //   return;
     // }
 
-    if(newSrNo.trim().length !== 16) return toast.warn("New SR No. should be 16 characters.");
+    if (newSrNo.trim().length !== 16)
+      return toast.warn("New SR No. should be 16 characters.");
 
     if (mode === "create") {
       const payload = {
@@ -485,7 +486,7 @@ export default function RecordEntryForm() {
               disableSearch
             />
             <Dropdown
-              label="Model Number"
+              label="Model"
               options={modelOptions}
               value={modelNumber}
               onChange={setModelNumber}
@@ -536,13 +537,6 @@ export default function RecordEntryForm() {
         <div className={cardCls}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-white font-semibold">Parts Required</h3>
-            <button
-              type="button"
-              onClick={addReqLine}
-              className="px-3 py-1 rounded-lg border border-white/20 hover:bg-white/5 text-white"
-            >
-              + Add
-            </button>
           </div>
           <div className="space-y-3">
             {reqLines.map((row, idx) => (
@@ -585,18 +579,18 @@ export default function RecordEntryForm() {
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={addReqLine}
+            className="px-3 py-1 rounded-lg border border-white/20 hover:bg-white/5 text-white"
+          >
+            + Add
+          </button>
         </div>
 
         <div className={cardCls}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-white font-semibold">Parts Replaced</h3>
-            <button
-              type="button"
-              onClick={addRepLine}
-              className="px-3 py-1 rounded-lg border border-white/20 hover:bg-white/5 text-white"
-            >
-              + Add
-            </button>
           </div>
           <div className="space-y-3">
             {repLines.map((row, idx) => (
@@ -635,6 +629,13 @@ export default function RecordEntryForm() {
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={addRepLine}
+            className="px-3 py-1 rounded-lg border border-white/20 hover:bg-white/5 text-white"
+          >
+            + Add
+          </button>
         </div>
 
         <div className={cardCls}>

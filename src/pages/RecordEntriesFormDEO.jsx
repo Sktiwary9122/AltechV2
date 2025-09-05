@@ -657,20 +657,6 @@ export default function RecordEntriesFormDEO() {
             <div className={cardCls}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-semibold">Parts Required</h3>
-                {!recordId && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setReqLines((a) => [
-                        ...a,
-                        { industryName: "", qtyRequired: "" },
-                      ])
-                    }
-                    className="px-3 py-1 rounded-lg border border-white/20 hover:bg-white/5 text-white"
-                  >
-                    + Add
-                  </button>
-                )}
               </div>
 
               <div className="space-y-3">
@@ -719,6 +705,20 @@ export default function RecordEntriesFormDEO() {
                   </div>
                 ))}
               </div>
+              {!recordId && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setReqLines((a) => [
+                      ...a,
+                      { industryName: "", qtyRequired: "" },
+                    ])
+                  }
+                  className="px-3 py-1 mt-5 rounded-lg border border-white/20 hover:bg-white/5 text-white"
+                >
+                  + Add
+                </button>
+              )}
             </div>
 
             <div className="flex justify-end gap-2">

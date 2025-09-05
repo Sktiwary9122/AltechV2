@@ -21,8 +21,8 @@ export const ROUTES = [
   { pageKey: PAGES.DAILY_CONSUMPTION, path: "/daily", element: <DailyConsumption />, label: "Daily Consumption" },
 
   { pageKey: PAGES.PART_ENTRIES, path: "/part-entries", element: <PartEntries />, label: "Part Entries" },
-  { pageKey: PAGES.PARTS_REQUIRED, path: "/parts-required", element: <PartsRequired />, label: "Parts Required" },
-  { pageKey: PAGES.PRODUCT_DETAILS, path: "/product-details", element: <ProductDetails />, label: "Product Details" },
+  { pageKey: PAGES.PARTS_REQUIRED, path: "/parts-required", element: <PartsRequired />, label: "Parts Creation" },
+  { pageKey: PAGES.PRODUCT_DETAILS, path: "/product-details", element: <ProductDetails />, label: "Model Creation" },
 
   // LIST page (now shows table + “Create Entry” opens Serial modal)
   { pageKey: PAGES.RECORD_ENTRIES, path: "/record-entries", element: <RecordEntries />, label: "Record Entries" },

@@ -221,7 +221,7 @@ export default function ProductDetails() {
 
       {/* Header row */}
       <div className="flex flex-col gap-4 sm:gap-5 mb-5 sm:flex-col md:flex-row md:items-center md:justify-between">
-        <h1 className="text-xl sm:text-2xl font-bold">Product Details</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Model Creation</h1>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
           <input
@@ -328,7 +328,7 @@ export default function ProductDetails() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-md">
             <h3 className="text-xl font-semibold text-center mb-5">
-              Create Product Detail
+              Create Model
             </h3>
             <form onSubmit={handleCreate} className="space-y-5">
               <Dropdown
