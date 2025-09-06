@@ -125,12 +125,13 @@ export default function Dashboard() {
     });
 
     const right = [
+      { key: "Total", label: "Total" },
       { key: "Action Taken", label: "Action Taken" },
       { key: "Packing Status", label: "Packing Status" },
       { key: "Packing Date", label: "Packing Date" },
       { key: "New Sr No.", label: "New Sr No." },
       { key: "Remarks", label: "Remarks" },
-      { key: "Total", label: "Total" },
+      
     ];
 
     const prStart = left.length;
@@ -178,8 +179,9 @@ export default function Dashboard() {
         "Packing Status": rec["Packing Status"] ?? "—",
         "Packing Date": rec["Packing Date"] ?? "—",
         "New Sr No.": rec["New Sr No."] ?? "—",
+        Total: typeof rec.total === "number" ? rec.total.toFixed(2) : Number(rec.total || 0).toFixed(2),
         Remarks: rec["Remarks"] ?? "—",
-        Total: typeof rec.total === "number" ? rec.total : Number(rec.total || 0),
+        
       };
 
       const merged = { ...base };

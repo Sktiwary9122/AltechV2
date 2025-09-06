@@ -546,11 +546,11 @@ export default function FinishedGoods() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-white/70 text-sm">
+                  {/* <div className="text-white/70 text-sm">
                     {cProductDetailsId
                       ? `productDetailsId: ${cProductDetailsId}`
                       : "Select product & model"}
-                  </div>
+                  </div> */}
                   <div className="flex gap-2">
                     <button
                       type="button"

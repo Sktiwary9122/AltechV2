@@ -7,7 +7,7 @@ import axios from "axios";
 /* ============================================
    AXIOS: base URL + Bearer token from storage
    ============================================ */
-const BASE_URL = "https://fb507838a6d5.ngrok-free.app/api"; // change if needed
+const BASE_URL = "https://api.altechsolution.in/api"; // change if needed
 
 const api = axios.create({ baseURL: BASE_URL });
 
