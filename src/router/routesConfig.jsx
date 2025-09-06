@@ -14,6 +14,7 @@ const Forbidden = lazy(() => import("../pages/Forbidden.jsx"));
 const NotFound = lazy(() => import("../pages/NotFound.jsx"));
 const SerialNumber = lazy(() => import("../pages/SerialnumberPage.jsx")); // optional standalone
 const RecordEntriesFormDEO = lazy(() => import("../pages/RecordEntriesFormDEO.jsx"))
+const FinishedGoods = lazy(() => import("../pages/FinishedGoods.jsx"));
 
 export const ROUTES = [
   { pageKey: PAGES.DASHBOARD, path: "/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -26,6 +27,8 @@ export const ROUTES = [
 
   // LIST page (now shows table + “Create Entry” opens Serial modal)
   { pageKey: PAGES.RECORD_ENTRIES, path: "/record-entries", element: <RecordEntries />, label: "Record Entries" },
+  { pageKey: PAGES.FINISHED_GOODS, path: "/finished-goods", element: <FinishedGoods />, label: "Finished Goods" },
+  // ...
 
   // FORM page (target after serial flow)
   { pageKey: PAGES.RECORD_ENTRIES, path: "/record-entries/form", element: <RecordEntriesForm />, hidden: true },

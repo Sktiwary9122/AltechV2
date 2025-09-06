@@ -7,7 +7,7 @@ import axios from "axios";
 /* ============================================
    AXIOS: base URL + Bearer token from storage
    ============================================ */
-const BASE_URL = "https://api.altechsolution.in/api"; // change if needed
+const BASE_URL = "https://fb507838a6d5.ngrok-free.app/api"; // change if needed
 
 const api = axios.create({ baseURL: BASE_URL });
 
@@ -383,6 +383,18 @@ export async function healthCheck() {
   const res = await api.get("/health");
   return res.data;
 }
+// Finished Goods
+export const getFinishedGoods = (params) =>
+  api.get("/finished-goods", { params });
+
+export const createFinishedGoods = (payload) =>
+  api.post("/finished-goods", payload);
+
+export const updateFinishedGoods = (id, payload) =>
+  api.put(`/finished-goods/${id}`, payload); // increments totals
+
+export const deleteFinishedGoods = (id) =>
+  api.delete(`/finished-goods/${id}`);
 
 /* ============================================
    Download excels
